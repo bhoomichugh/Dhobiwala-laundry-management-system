@@ -49,6 +49,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- PostgreSQL Driver for Neon/Render databases -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
 
         <!-- Lombok -->
         <dependency>
@@ -57,10 +64,6 @@
             <version>1.18.32</version> <!-- ya latest -->
             <scope>provided</scope>
         </dependency>
-
-
-
-
         <!-- For Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

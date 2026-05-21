@@ -34,6 +34,14 @@ SPRING_DATASOURCE_USERNAME=<mysql-user>
 SPRING_DATASOURCE_PASSWORD=<mysql-password>
 ```
 
+For Neon PostgreSQL, use the JDBC URL from Neon and convert it to this format:
+
+```text
+SPRING_DATASOURCE_URL=jdbc:postgresql://<neon-host>/<database>?sslmode=require
+SPRING_DATASOURCE_USERNAME=<neon-user>
+SPRING_DATASOURCE_PASSWORD=<neon-password>
+```
+
 ## Render Deploy
 
 This repo includes a root `render.yaml` blueprint. On Render:
@@ -43,9 +51,9 @@ This repo includes a root `render.yaml` blueprint. On Render:
 3. Add these environment variables:
 
 ```text
-SPRING_DATASOURCE_URL=jdbc:mysql://${{MySQL.MYSQL_HOST}}:${{MySQL.MYSQL_PORT}}/${{MySQL.MYSQL_DATABASE}}
-SPRING_DATASOURCE_USERNAME=${{MySQL.MYSQL_USER}}
-SPRING_DATASOURCE_PASSWORD=${{MySQL.MYSQL_PASSWORD}}
+SPRING_DATASOURCE_URL=jdbc:postgresql://<neon-host>/<database>?sslmode=require
+SPRING_DATASOURCE_USERNAME=<neon-user>
+SPRING_DATASOURCE_PASSWORD=<neon-password>
 ```
 
 Start URL after deploy:
