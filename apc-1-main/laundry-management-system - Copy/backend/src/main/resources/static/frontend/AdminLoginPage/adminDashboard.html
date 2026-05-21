@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – DhobiWaala Admin</title>
+  <meta name="description" content="DhobiWaala Admin Dashboard – Overview of orders, users, and operations."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131f;
+      --surface2: #1c1c2e;
+      --accent: #ff6b35;
+      --gold: #ffd166;
+      --text: #e8e8f0;
+      --muted: #8888a8;
+      --success: #06d6a0;
+      --error: #ef476f;
+      --border: rgba(255,107,53,0.18);
+      --glow: 0 0 30px rgba(255,107,53,0.25);
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    /* BG glow blobs */
+    .bg-blob {
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+    }
+    .blob1 { top: -200px; right: -100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 70%); animation: blobFloat 12s ease-in-out infinite alternate; }
+    .blob2 { bottom: -200px; left: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,209,102,0.05) 0%, transparent 70%); animation: blobFloat 15s ease-in-out infinite alternate-reverse; }
+    @keyframes blobFloat { 0% { transform: scale(1); } 100% { transform: scale(1.2) translate(20px,-20px); } }
+
+    /* NAVBAR */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .nav-logo { font-size: 1.45rem; font-weight: 800; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; padding: 0.5rem 0.9rem;
+      border-radius: 8px; font-size: 0.875rem; font-weight: 500;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); background: rgba(255,255,255,0.06); }
+    .btn-logout {
+      background: rgba(239,71,111,0.12); border: 1px solid rgba(239,71,111,0.25);
+      color: var(--error); padding: 0.45rem 1.1rem; border-radius: 8px;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-logout:hover { background: rgba(239,71,111,0.22); transform: translateY(-1px); }
+
+    /* PAGE */
+    .page { position: relative; z-index: 1; padding-top: 70px; min-height: 100vh; }
+
+    /* HERO BANNER */
+    .hero {
+      padding: 3.5rem 2.5rem 2.5rem;
+      background: linear-gradient(135deg, rgba(255,107,53,0.06) 0%, rgba(255,209,102,0.03) 50%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: '🧺'; position: absolute; right: 3rem; top: 50%; transform: translateY(-50%);
+      font-size: 8rem; opacity: 0.06; user-select: none;
+    }
+    .hero-label { font-size: 0.75rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.6rem; }
+    .hero h1 { font-size: 2.2rem; font-weight: 800; color: var(--text); letter-spacing: -1px; margin-bottom: 0.5rem; }
+    .hero p { color: var(--muted); font-size: 1rem; }
+
+    /* MAIN CONTENT */
+    .content { padding: 2.5rem; max-width: 1200px; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* STAT CARDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 3rem; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 16px;
+      padding: 1.6rem 1.5rem;
+      position: relative; overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.5s ease both;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; border-top-color: var(--success); }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; border-top-color: var(--gold); }
+    @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+    .stat-card::after {
+      content: ''; position: absolute; bottom: -20px; right: -20px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(255,107,53,0.08), transparent);
+      border-radius: 50%;
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: var(--glow); }
+    .stat-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .stat-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.4rem; }
+    .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -1.5px; }
+    .stat-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+
+    /* ACTION CARDS */
+    .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; }
+    .action-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 1.8rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex; flex-direction: column; gap: 0.75rem;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.5s ease both;
+      position: relative; overflow: hidden;
+    }
+    .action-card:nth-child(1) { animation-delay: 0.1s; }
+    .action-card:nth-child(2) { animation-delay: 0.15s; }
+    .action-card:nth-child(3) { animation-delay: 0.2s; }
+    .action-card:nth-child(4) { animation-delay: 0.25s; }
+    .action-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+    .action-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,107,53,0.5), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .action-card:hover::before { opacity: 1; }
+    .action-icon {
+      width: 52px; height: 52px; background: rgba(255,107,53,0.12);
+      border: 1px solid rgba(255,107,53,0.2); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; transition: background 0.2s;
+    }
+    .action-card:hover .action-icon { background: rgba(255,107,53,0.2); }
+    .action-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .action-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+    .action-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      background: rgba(255,107,53,0.1); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--accent); font-size: 1rem; margin-top: auto;
+      align-self: flex-start; transition: background 0.2s, transform 0.2s;
+    }
+    .action-card:hover .action-arrow { background: var(--accent); color: #fff; transform: translateX(4px); }
+
+    /* Loading skeleton */
+    .skel { background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  </style>
+</head>
+<body>
+
+<div class="bg-blob blob1"></div>
+<div class="bg-blob blob2"></div>
+
+<nav>
+  <a href="adminDashboard.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <div class="nav-links">
+    <a href="adminDashboard.html" class="active">Dashboard</a>
+    <a href="manageOrders.html">Manage Orders</a>
+    <a href="manageUsers.html">Manage Users</a>
+    <a href="viewReports.html">View Reports</a>
+    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <div class="hero-label">Admin Dashboard</div>
+    <h1>Welcome back, Admin 👋</h1>
+    <p>Here's what's happening today.</p>
+  </div>
+
+  <div class="content">
+    <div class="section-title">Live Statistics</div>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="statUsers">—</div>
+        <div class="stat-sub">Registered accounts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" id="statOrders">—</div>
+        <div class="stat-sub">All time orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="statCompleted">—</div>
+        <div class="stat-sub">Successfully delivered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="statPending">—</div>
+        <div class="stat-sub">Awaiting processing</div>
+      </div>
+    </div>
+
+    <div class="section-title">Quick Actions</div>
+    <div class="actions-grid">
+      <a href="manageUsers.html" class="action-card">
+        <div class="action-icon">👥</div>
+        <div class="action-title">Manage Users</div>
+        <div class="action-desc">View and manage all registered customers and admin accounts.</div>
+        <div class="action-arrow">→</div>
+      </a>
+      <a href="manageOrders.html" class="action-card">
+        <div class="action-icon">📦</div>
+        <div class="action-title">Manage Orders</div>
+        <div class="action-desc">Track, update, and manage all customer laundry orders.</div>
+        <div class="action-arrow">→</div>
+      </a>
+      <a href="manageServices.html" class="action-card">
+        <div class="action-icon">🧺</div>
+        <div class="action-title">Manage Services</div>
+        <div class="action-desc">View orders grouped by service type and manage each group.</div>
+        <div class="action-arrow">→</div>
+      </a>
+      <a href="viewReports.html" class="action-card">
+        <div class="action-icon">📊</div>
+        <div class="action-title">View Reports</div>
+        <div class="action-desc">Analyze business performance with detailed analytics and reports.</div>
+        <div class="action-arrow">→</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auth check before DOMContentLoaded
+  if (!sessionStorage.getItem('adminToken')) {
+    window.location.href = 'adminLogin.html';
+  }
+
+  function handleLogout() {
+    sessionStorage.clear();
+    window.location.href = 'adminLogin.html';
+  }
+
+  function animateCount(el, target, duration = 1200) {
+    const start = performance.now();
+    const update = (time) => {
+      const progress = Math.min((time - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+
+  async function loadStats() {
+    try {
+      const [usersRes, ordersRes] = await Promise.all([
+        fetch('/api/users'),
+        fetch('/api/orders')
+      ]);
+      const users = await usersRes.json();
+      const orders = await ordersRes.json();
+
+      const totalUsers = Array.isArray(users) ? users.length : 0;
+      const totalOrders = Array.isArray(orders) ? orders.length : 0;
+      const completed = Array.isArray(orders) ? orders.filter(o => o.status === 'Completed' || o.status === 'COMPLETED').length : 0;
+      const pending = Array.isArray(orders) ? orders.filter(o => o.status === 'Pending' || o.status === 'PENDING').length : 0;
+
+      animateCount(document.getElementById('statUsers'), totalUsers);
+      animateCount(document.getElementById('statOrders'), totalOrders);
+      animateCount(document.getElementById('statCompleted'), completed);
+      animateCount(document.getElementById('statPending'), pending);
+    } catch (err) {
+      ['statUsers','statOrders','statCompleted','statPending'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+      console.error('Failed to fetch stats:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+</body>
+</html>

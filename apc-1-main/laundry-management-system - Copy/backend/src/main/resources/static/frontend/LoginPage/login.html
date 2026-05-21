@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — DhobiWaala</title>
+  <meta name="description" content="Login to your DhobiWaala account to manage your laundry orders." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    if (sessionStorage.getItem('loggedInUser')) window.location.href = 'userDashboard.html';
+    if (sessionStorage.getItem('adminToken')) window.location.href = '../AdminLoginPage/adminDashboard.html';
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #13131f; --accent: #ff6b35; --gold: #ffd166;
+      --text: #e8e8f0; --muted: #8888a8; --error: #ef476f; --success: #06d6a0;
+      --border: rgba(255,107,53,0.18); --glow: 0 0 30px rgba(255,107,53,0.25);
+    }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 2rem;
+      background-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,107,53,0.1) 0%, transparent 60%);
+    }
+    /* NAVBAR */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 70px;
+      background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); text-decoration: none; }
+    .nav-logo span { color: var(--gold); }
+    .nav-right { display: flex; gap: 1rem; align-items: center; }
+    .nav-right a { font-size: 0.87rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-right a:hover { color: var(--text); }
+    .nav-right .btn-signup {
+      background: transparent; border: 1.5px solid var(--border); color: var(--text);
+      padding: 0.4rem 1rem; border-radius: 8px; font-weight: 500; transition: all 0.2s;
+    }
+    .nav-right .btn-signup:hover { border-color: var(--accent); color: var(--accent); }
+    /* CARD */
+    .card {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 24px; backdrop-filter: blur(20px);
+      padding: 2.8rem; width: 100%; max-width: 420px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      animation: fadeUp 0.5s ease;
+    }
+    .card-icon { font-size: 2.5rem; text-align: center; margin-bottom: 1.2rem; }
+    .card h1 { font-size: 1.7rem; font-weight: 800; text-align: center; margin-bottom: 0.4rem; letter-spacing: -0.5px; }
+    .card .subtitle { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    /* FORM */
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
+    input {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 0.85rem 1rem; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; transition: all 0.2s; outline: none;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
+    input::placeholder { color: var(--muted); }
+    .password-wrapper { position: relative; }
+    .password-wrapper input { padding-right: 3rem; }
+    .toggle-pw {
+      position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 1rem; padding: 0.2rem; transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--text); }
+    /* BUTTON */
+    .btn-login {
+      width: 100%; height: 52px; background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 0.8rem;
+      transition: all 0.3s; box-shadow: var(--glow); display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-login:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 40px rgba(255,107,53,0.4); }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+    /* SPINNER */
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    .btn-login.loading .spinner { display: block; }
+    .btn-login.loading .btn-text { display: none; }
+    /* ERROR */
+    .error-box {
+      background: rgba(239,71,111,0.1); border: 1px solid rgba(239,71,111,0.3);
+      border-radius: 10px; padding: 0.75rem 1rem; color: var(--error);
+      font-size: 0.875rem; margin-top: 1rem; display: none; text-align: center;
+    }
+    .error-box.show { display: block; }
+    /* FOOTER LINKS */
+    .card-footer { text-align: center; margin-top: 1.5rem; font-size: 0.87rem; color: var(--muted); }
+    .card-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .card-footer a:hover { text-decoration: underline; }
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .divider span { font-size: 0.8rem; color: var(--muted); }
+    /* ADMIN LINK */
+    .admin-link {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem;
+      color: var(--muted); font-size: 0.87rem; text-decoration: none; transition: all 0.2s;
+    }
+    .admin-link:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="../HomePage/home.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <div class="nav-right">
+    <a href="../signuppage/signup.html" class="btn-signup">Sign Up</a>
+  </div>
+</nav>
+
+<div class="card">
+  <div class="card-icon">👋</div>
+  <h1>Welcome Back</h1>
+  <p class="subtitle">Sign in to manage your laundry orders</p>
+
+  <div class="form-group">
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+  </div>
+
+  <div class="form-group">
+    <label for="password">Password</label>
+    <div class="password-wrapper">
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+      <button class="toggle-pw" id="togglePw" type="button" aria-label="Toggle password">👁️</button>
+    </div>
+  </div>
+
+  <button class="btn-login" id="loginBtn">
+    <div class="spinner"></div>
+    <span class="btn-text">Sign In →</span>
+  </button>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="divider"><span>or</span></div>
+  <a href="../AdminLoginPage/adminLogin.html" class="admin-link">🛡️ Login as Admin</a>
+
+  <div class="card-footer" style="margin-top:1.5rem">
+    Don't have an account? <a href="../signuppage/signup.html">Sign up free</a>
+  </div>
+</div>
+
+<script>
+  const emailEl = document.getElementById('email');
+  const passwordEl = document.getElementById('password');
+  const loginBtn = document.getElementById('loginBtn');
+  const errorBox = document.getElementById('errorBox');
+  const togglePw = document.getElementById('togglePw');
+
+  togglePw.addEventListener('click', () => {
+    const isText = passwordEl.type === 'text';
+    passwordEl.type = isText ? 'password' : 'text';
+    togglePw.textContent = isText ? '👁️' : '🙈';
+  });
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('show');
+  }
+
+  function hideError() { errorBox.classList.remove('show'); }
+
+  async function handleLogin() {
+    const email = emailEl.value.trim();
+    const password = passwordEl.value;
+    hideError();
+
+    if (!email || !password) { showError('Please fill in all fields.'); return; }
+
+    loginBtn.disabled = true;
+    loginBtn.classList.add('loading');
+
+    try {
+      const res = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem('loggedInUser', JSON.stringify(data));
+        window.location.href = 'userDashboard.html';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showError(err.message || 'Invalid email or password. Please try again.');
+      }
+    } catch (e) {
+      showError('Cannot connect to server. Make sure the backend is running.');
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.classList.remove('loading');
+    }
+  }
+
+  loginBtn.addEventListener('click', handleLogin);
+  [emailEl, passwordEl].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); }));
+</script>
+</body>
+</html>

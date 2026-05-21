@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Users – DhobiWaala Admin</title>
+  <meta name="description" content="DhobiWaala Admin – View and manage all registered users."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #13131f; --surface2: #1c1c2e;
+      --accent: #ff6b35; --gold: #ffd166; --text: #e8e8f0;
+      --muted: #8888a8; --success: #06d6a0; --error: #ef476f;
+      --border: rgba(255,107,53,0.18); --glow: 0 0 30px rgba(255,107,53,0.25);
+    }
+    html, body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    .bg-blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .blob1 { top: -200px; right: -150px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 70%); }
+    .blob2 { bottom: -150px; left: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,209,102,0.04) 0%, transparent 70%); }
+
+    /* NAVBAR */
+    nav { position: fixed; top: 0; left: 0; right: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 100; }
+    .nav-logo { font-size: 1.45rem; font-weight: 800; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: color 0.2s, background 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); background: rgba(255,255,255,0.06); }
+    .btn-logout { background: rgba(239,71,111,0.12); border: 1px solid rgba(239,71,111,0.25); color: var(--error); padding: 0.45rem 1.1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-logout:hover { background: rgba(239,71,111,0.22); transform: translateY(-1px); }
+
+    /* PAGE */
+    .page { position: relative; z-index: 1; padding-top: 70px; }
+    .page-header { padding: 2.5rem 2.5rem 2rem; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, rgba(255,107,53,0.04) 0%, transparent 60%); }
+    .header-row { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .page-header h1 { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; display: flex; align-items: center; gap: 0.75rem; }
+    .count-badge { background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); color: var(--accent); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+
+    /* SEARCH */
+    .search-wrap { position: relative; min-width: 280px; }
+    .search-wrap input {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 0.7rem 1rem 0.7rem 2.6rem;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+    .search-wrap input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); font-size: 0.9rem; color: var(--muted); pointer-events: none; }
+
+    /* CONTENT */
+    .content { padding: 2rem 2.5rem 3rem; }
+
+    /* USER CARDS GRID */
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .user-card {
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px;
+      padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;
+      transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+      animation: fadeUp 0.4s ease both;
+    }
+    .user-card:hover { transform: translateY(-3px); border-color: var(--border); box-shadow: var(--glow); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    .user-header { display: flex; align-items: center; gap: 1rem; }
+    .avatar {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; font-weight: 800; color: #fff;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .user-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .user-email { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .user-details { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; }
+    .detail-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+    .detail-value { font-size: 0.85rem; color: var(--text); font-weight: 600; }
+
+    .role-badge { display: inline-block; padding: 0.22rem 0.7rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .role-user { background: rgba(99,179,237,0.15); color: #63b3ed; border: 1px solid rgba(99,179,237,0.25); }
+    .role-admin { background: rgba(255,107,53,0.15); color: var(--accent); border: 1px solid rgba(255,107,53,0.3); }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 5rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .empty-icon { font-size: 4rem; opacity: 0.3; }
+    .empty-title { font-size: 1.2rem; font-weight: 700; color: var(--muted); }
+    .empty-sub { font-size: 0.875rem; color: var(--muted); opacity: 0.7; }
+
+    /* LOADING SKELETON */
+    .skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+    .skel-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 1.5rem; }
+    .skel-line { height: 14px; border-radius: 4px; margin-bottom: 10px; background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+    @media (max-width: 768px) {
+      .content { padding: 1.5rem 1rem 3rem; }
+      .page-header { padding: 2rem 1rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blob blob1"></div>
+<div class="bg-blob blob2"></div>
+
+<nav>
+  <a href="adminDashboard.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <div class="nav-links">
+    <a href="adminDashboard.html">Dashboard</a>
+    <a href="manageOrders.html">Manage Orders</a>
+    <a href="manageUsers.html" class="active">Manage Users</a>
+    <a href="viewReports.html">View Reports</a>
+    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="header-row">
+      <div>
+        <h1>👥 Manage Users <span class="count-badge" id="countBadge">—</span></h1>
+        <p>All registered customers and administrator accounts.</p>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by name or email…" oninput="filterUsers()"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <div class="skel-grid">
+      ${[1,2,3,4,5,6].map(() => `<div class="skel-card"><div class="skel-line" style="width:60%;height:18px;margin-bottom:8px"></div><div class="skel-line" style="width:85%"></div><div class="skel-line" style="width:50%;margin-top:16px"></div></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<script>
+  if (!sessionStorage.getItem('adminToken')) {
+    window.location.href = 'adminLogin.html';
+  }
+
+  function handleLogout() { sessionStorage.clear(); window.location.href = 'adminLogin.html'; }
+
+  let allUsers = [];
+
+  function getAvatarColor(name) {
+    const colors = [
+      ['#ff6b35','#e55a25'], ['#06d6a0','#05b887'], ['#ffd166','#e6b84a'],
+      ['#63b3ed','#4a9dd4'], ['#e040fb','#c21fe8'], ['#00b4d8','#0096c7'],
+      ['#f72585','#d41e6f'], ['#b5e48c','#90c666']
+    ];
+    let hash = 0;
+    for (let i = 0; i < (name||'').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    const pair = colors[Math.abs(hash) % colors.length];
+    return `linear-gradient(135deg, ${pair[0]}, ${pair[1]})`;
+  }
+
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function getRoleBadge(role) {
+    const r = (role || 'USER').toUpperCase();
+    if (r === 'ADMIN') return `<span class="role-badge role-admin">Admin</span>`;
+    return `<span class="role-badge role-user">User</span>`;
+  }
+
+  function renderUsers(users) {
+    const content = document.getElementById('content');
+    document.getElementById('countBadge').textContent = users.length;
+
+    if (users.length === 0) {
+      content.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">No users found</div><div class="empty-sub">Try a different search term.</div></div>`;
+      return;
+    }
+
+    content.innerHTML = `<div class="users-grid">${users.map((u, i) => {
+      const name = u.name || u.username || u.fullName || 'Unknown';
+      const email = u.email || '—';
+      const phone = u.phone || u.phoneNumber || u.mobile || '—';
+      const role = u.role || 'USER';
+      const delay = Math.min(i * 0.04, 0.4);
+      return `<div class="user-card" style="animation-delay:${delay}s">
+        <div class="user-header">
+          <div class="avatar" style="background:${getAvatarColor(name)}">${getInitials(name)}</div>
+          <div>
+            <div class="user-name">${name}</div>
+            <div class="user-email">${email}</div>
+          </div>
+        </div>
+        <div class="user-details">
+          <div class="detail-row">
+            <span class="detail-label">📞 Phone</span>
+            <span class="detail-value">${phone}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">🏷️ Role</span>
+            <span class="detail-value">${getRoleBadge(role)}</span>
+          </div>
+          ${u.id ? `<div class="detail-row"><span class="detail-label">🆔 ID</span><span class="detail-value" style="font-family:monospace;font-size:0.78rem;color:var(--muted)">#${u.id}</span></div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function filterUsers() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!q) { renderUsers(allUsers); return; }
+    const filtered = allUsers.filter(u => {
+      const name = (u.name || u.username || u.fullName || '').toLowerCase();
+      const email = (u.email || '').toLowerCase();
+      return name.includes(q) || email.includes(q);
+    });
+    renderUsers(filtered);
+  }
+
+  async function loadUsers() {
+    try {
+      const res = await fetch('/api/users');
+      allUsers = await res.json();
+      if (!Array.isArray(allUsers)) allUsers = [];
+      renderUsers(allUsers);
+    } catch(e) {
+      document.getElementById('content').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Failed to load users</div><div class="empty-sub">Check your server connection.</div></div>`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+</body>
+</html>

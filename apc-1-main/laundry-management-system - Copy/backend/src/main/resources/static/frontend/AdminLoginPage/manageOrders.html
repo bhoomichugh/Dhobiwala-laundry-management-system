@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Orders – DhobiWaala Admin</title>
+  <meta name="description" content="DhobiWaala Admin – Manage and update all customer orders."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131f;
+      --surface2: #1c1c2e;
+      --accent: #ff6b35;
+      --gold: #ffd166;
+      --text: #e8e8f0;
+      --muted: #8888a8;
+      --success: #06d6a0;
+      --error: #ef476f;
+      --border: rgba(255,107,53,0.18);
+      --glow: 0 0 30px rgba(255,107,53,0.25);
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    .bg-blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .blob1 { top: -150px; right: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 70%); }
+    .blob2 { bottom: -150px; left: -100px; width: 450px; height: 450px; background: radial-gradient(circle, rgba(6,214,160,0.04) 0%, transparent 70%); }
+
+    /* NAVBAR */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); z-index: 100;
+    }
+    .nav-logo { font-size: 1.45rem; font-weight: 800; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: color 0.2s, background 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); background: rgba(255,255,255,0.06); }
+    .btn-logout { background: rgba(239,71,111,0.12); border: 1px solid rgba(239,71,111,0.25); color: var(--error); padding: 0.45rem 1.1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s, transform 0.15s; }
+    .btn-logout:hover { background: rgba(239,71,111,0.22); transform: translateY(-1px); }
+
+    /* PAGE */
+    .page { position: relative; z-index: 1; padding-top: 70px; min-height: 100vh; }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 2.5rem 2.5rem 2rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(255,107,53,0.04) 0%, transparent 60%);
+    }
+    .page-header h1 { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+    .btn-refresh {
+      background: rgba(255,107,53,0.1); border: 1px solid var(--border);
+      color: var(--accent); padding: 0.6rem 1.2rem; border-radius: 10px;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s, transform 0.15s;
+    }
+    .btn-refresh:hover { background: rgba(255,107,53,0.2); transform: translateY(-1px); }
+    .refresh-icon { display: inline-block; transition: transform 0.5s; }
+    .btn-refresh.loading .refresh-icon { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FILTER BAR */
+    .filter-bar { padding: 1.5rem 2.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 0.5rem 1.2rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08);
+      background: var(--surface); color: var(--muted); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 15px rgba(255,107,53,0.35); }
+
+    /* CONTENT */
+    .content { padding: 0 2.5rem 3rem; }
+
+    /* STATS ROW */
+    .mini-stats { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .mini-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; }
+    .mini-stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .mini-stat-label { font-size: 0.8rem; color: var(--muted); }
+    .mini-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+
+    /* TABLE WRAPPER */
+    .table-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid rgba(255,255,255,0.06); }
+    thead th {
+      padding: 1rem 1.2rem; text-align: left;
+      font-size: 0.72rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+    tbody td { padding: 1rem 1.2rem; font-size: 0.9rem; color: var(--text); vertical-align: middle; }
+    .order-id { font-weight: 700; color: var(--accent); font-size: 0.8rem; font-family: monospace; }
+    .service-badge {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 600; color: var(--text);
+    }
+
+    /* STATUS BADGES */
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-pending { background: rgba(255,107,53,0.15); color: var(--accent); border: 1px solid rgba(255,107,53,0.3); }
+    .badge-completed { background: rgba(6,214,160,0.12); color: var(--success); border: 1px solid rgba(6,214,160,0.25); }
+    .badge-cancelled { background: rgba(239,71,111,0.12); color: var(--error); border: 1px solid rgba(239,71,111,0.25); }
+    .badge::before { content: '●'; font-size: 0.5rem; }
+
+    /* ACTION BUTTONS */
+    .action-btns { display: flex; gap: 0.5rem; }
+    .btn-complete {
+      padding: 0.38rem 0.85rem; border-radius: 7px; border: 1px solid rgba(6,214,160,0.35);
+      color: var(--success); background: rgba(6,214,160,0.08); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.18s;
+    }
+    .btn-complete:hover { background: rgba(6,214,160,0.18); transform: translateY(-1px); }
+    .btn-cancel {
+      padding: 0.38rem 0.85rem; border-radius: 7px; border: 1px solid rgba(239,71,111,0.35);
+      color: var(--error); background: rgba(239,71,111,0.08); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.18s;
+    }
+    .btn-cancel:hover { background: rgba(239,71,111,0.18); transform: translateY(-1px); }
+    .btn-complete:disabled, .btn-cancel:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center; padding: 5rem 2rem;
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .empty-icon { font-size: 4rem; opacity: 0.3; }
+    .empty-title { font-size: 1.2rem; font-weight: 700; color: var(--muted); }
+    .empty-sub { font-size: 0.875rem; color: var(--muted); opacity: 0.7; }
+
+    /* LOADING */
+    .loading-row td { text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid rgba(255,107,53,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 0.5rem; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      padding: 0.9rem 1.4rem; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 600; z-index: 999;
+      display: none; animation: toastIn 0.3s ease;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .toast-success { background: rgba(6,214,160,0.15); border: 1px solid rgba(6,214,160,0.3); color: var(--success); }
+    .toast-error { background: rgba(239,71,111,0.15); border: 1px solid rgba(239,71,111,0.3); color: var(--error); }
+
+    @media (max-width: 768px) {
+      .nav-links a:not(.active) { display: none; }
+      .content { padding: 0 1rem 3rem; }
+      .page-header, .filter-bar { padding-left: 1rem; padding-right: 1rem; }
+      table { font-size: 0.8rem; }
+      thead th, tbody td { padding: 0.75rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blob blob1"></div>
+<div class="bg-blob blob2"></div>
+
+<nav>
+  <a href="adminDashboard.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <div class="nav-links">
+    <a href="adminDashboard.html">Dashboard</a>
+    <a href="manageOrders.html" class="active">Manage Orders</a>
+    <a href="manageUsers.html">Manage Users</a>
+    <a href="viewReports.html">View Reports</a>
+    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>📦 Manage Orders</h1>
+      <p>View, filter and update all customer orders in real-time.</p>
+    </div>
+    <button class="btn-refresh" id="refreshBtn" onclick="loadOrders()">
+      <span class="refresh-icon">↻</span> Refresh
+    </button>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL', this)">All Orders</button>
+    <button class="filter-btn" data-filter="PENDING" onclick="setFilter('PENDING', this)">⏳ Pending</button>
+    <button class="filter-btn" data-filter="COMPLETED" onclick="setFilter('COMPLETED', this)">✅ Completed</button>
+    <button class="filter-btn" data-filter="CANCELLED" onclick="setFilter('CANCELLED', this)">❌ Cancelled</button>
+  </div>
+
+  <div class="content">
+    <div class="mini-stats" id="miniStats"></div>
+    <div class="table-wrap">
+      <table id="ordersTable">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Service</th>
+            <th>Quantity (kg)</th>
+            <th>User Email</th>
+            <th>Payment</th>
+          <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr class="loading-row"><td colspan="7"><span class="spinner"></span>Loading orders…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  if (!sessionStorage.getItem('adminToken')) {
+    window.location.href = 'adminLogin.html';
+  }
+
+  let allOrders = [];
+  let activeFilter = 'ALL';
+
+  function handleLogout() { sessionStorage.clear(); window.location.href = 'adminLogin.html'; }
+
+  function setFilter(filter, btn) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderOrders();
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✓ ' : '⚠ ') + msg;
+    t.className = `toast toast-${type}`;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  function getStatusBadge(status) {
+    const s = (status || '').toUpperCase();
+    if (s === 'COMPLETED') return `<span class="badge badge-completed">Completed</span>`;
+    if (s === 'CANCELLED') return `<span class="badge badge-cancelled">Cancelled</span>`;
+    return `<span class="badge badge-pending">Pending</span>`;
+  }
+
+  function renderOrders() {
+    const tbody = document.getElementById('ordersBody');
+    let filtered = allOrders;
+    if (activeFilter !== 'ALL') {
+      filtered = allOrders.filter(o => (o.status || '').toUpperCase() === activeFilter);
+    }
+
+    // Mini stats
+    const total = allOrders.length;
+    const completed = allOrders.filter(o => (o.status||'').toUpperCase() === 'COMPLETED').length;
+    const pending = allOrders.filter(o => (o.status||'').toUpperCase() === 'PENDING').length;
+    const cancelled = allOrders.filter(o => (o.status||'').toUpperCase() === 'CANCELLED').length;
+    document.getElementById('miniStats').innerHTML = `
+      <div class="mini-stat"><div class="mini-stat-dot" style="background:var(--accent)"></div><div><div class="mini-stat-label">Total</div><div class="mini-stat-val">${total}</div></div></div>
+      <div class="mini-stat"><div class="mini-stat-dot" style="background:var(--success)"></div><div><div class="mini-stat-label">Completed</div><div class="mini-stat-val">${completed}</div></div></div>
+      <div class="mini-stat"><div class="mini-stat-dot" style="background:var(--gold)"></div><div><div class="mini-stat-label">Pending</div><div class="mini-stat-val">${pending}</div></div></div>
+      <div class="mini-stat"><div class="mini-stat-dot" style="background:var(--error)"></div><div><div class="mini-stat-label">Cancelled</div><div class="mini-stat-val">${cancelled}</div></div></div>
+    `;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">No orders found</div>
+          <div class="empty-sub">No orders match the current filter.</div>
+        </div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(order => {
+      const statusUp = (order.status || '').toUpperCase();
+      const isDone = statusUp === 'COMPLETED' || statusUp === 'CANCELLED';
+      return `<tr>
+        <td><span class="order-id">#${order.id || order.orderId || '—'}</span></td>
+        <td><span class="service-badge">${order.serviceType || order.service || '—'}</span></td>
+        <td>${order.quantity ?? order.weight ?? '—'} kg</td>
+        <td style="color:var(--muted);font-size:0.82rem">${order.userEmail || order.email || '—'}</td>
+        <td>${getStatusBadge(order.status)}</td>
+        <td>
+          <div class="action-btns">
+            <button class="btn-complete" onclick="updateOrder(${order.id || order.orderId}, 'Completed', this)" ${isDone ? 'disabled' : ''}>✓ Complete</button>
+            <button class="btn-cancel" onclick="updateOrder(${order.id || order.orderId}, 'Cancelled', this)" ${isDone ? 'disabled' : ''}>✕ Cancel</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function updateOrder(id, status, btn) {
+    const row = btn.closest('tr');
+    const btns = row.querySelectorAll('button');
+    btns.forEach(b => b.disabled = true);
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        showToast(`Order #${id} marked as ${status}.`);
+        await loadOrders();
+      } else {
+        showToast('Failed to update order.', 'error');
+        btns.forEach(b => b.disabled = false);
+      }
+    } catch(e) {
+      showToast('Connection error.', 'error');
+      btns.forEach(b => b.disabled = false);
+    }
+  }
+
+  async function loadOrders() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('loading');
+    try {
+      const res = await fetch('/api/orders');
+      allOrders = await res.json();
+      if (!Array.isArray(allOrders)) allOrders = [];
+      renderOrders();
+    } catch(e) {
+      document.getElementById('ordersBody').innerHTML = `<tr class="loading-row"><td colspan="6" style="color:var(--error)">⚠ Failed to load orders. Check server connection.</td></tr>`;
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadOrders);
+</script>
+</body>
+</html>

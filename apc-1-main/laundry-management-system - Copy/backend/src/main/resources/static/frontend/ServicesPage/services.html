@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Services — DhobiWaala</title>
+  <meta name="description" content="Browse and order DhobiWaala laundry services: Wash & Fold, Dry Cleaning, Ironing, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    if (!sessionStorage.getItem('loggedInUser')) window.location.href = '../LoginPage/login.html';
+    (function(){ const t=localStorage.getItem('dhobiwaala-theme')||'dark'; document.documentElement.setAttribute('data-theme',t); })();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root, [data-theme="dark"] {
+      --bg: #0a0a0f; --surface: #13131f; --surface2: #1c1c2e;
+      --accent: #ff6b35; --gold: #ffd166; --text: #e8e8f0; --muted: #8888a8;
+      --success: #06d6a0; --error: #ef476f; --border: rgba(255,107,53,0.18);
+      --glow: 0 0 30px rgba(255,107,53,0.25);
+      --nav-bg: rgba(10,10,15,0.9); --shadow: rgba(0,0,0,0.3);
+    }
+    [data-theme="light"] {
+      --bg: #f5f3f0; --surface: #ffffff; --surface2: #f0ece6;
+      --accent: #e85d26; --gold: #d4a030; --text: #1a1a2e; --muted: #6b6b80;
+      --success: #05b88a; --error: #d44060;
+      --border: rgba(228,93,38,0.15); --glow: 0 0 20px rgba(228,93,38,0.15);
+      --nav-bg: rgba(245,243,240,0.92); --shadow: rgba(0,0,0,0.08);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.4s, color 0.4s; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 70px;
+      background: var(--nav-bg); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); transition: all 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 4px 30px var(--shadow); }
+    .nav-logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); text-decoration: none; }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    .nav-links a.active { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 0.8rem; }
+    #userGreet { font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+    #userGreet .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: #fff;
+    }
+    .btn-logout {
+      background: transparent; border: 1px solid rgba(239,71,111,0.3);
+      color: var(--error); padding: 0.4rem 1rem; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-logout:hover { background: rgba(239,71,111,0.1); border-color: var(--error); }
+
+    /* THEME TOGGLE */
+    .theme-toggle {
+      width: 48px; height: 26px; border-radius: 100px; border: 1px solid var(--border);
+      background: var(--surface2); cursor: pointer; position: relative;
+      transition: background 0.3s; padding: 0; flex-shrink: 0;
+    }
+    .theme-toggle .toggle-knob {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); position: absolute; top: 2px; left: 2px;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    [data-theme="light"] .theme-toggle .toggle-knob { transform: translateX(22px); }
+
+    /* HAMBURGER */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; background: none;
+      border: none; cursor: pointer; padding: 4px; z-index: 1001;
+    }
+    .hamburger span { display: block; width: 24px; height: 2.5px; background: var(--text); border-radius: 2px; transition: all 0.35s; }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+    .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s; }
+    .mobile-overlay.show { display: block; opacity: 1; }
+    .mobile-menu { display: none; position: fixed; top: 0; right: -300px; z-index: 1000; width: 280px; height: 100vh; background: var(--surface); padding: 90px 2rem 2rem; transition: right 0.4s cubic-bezier(0.4,0,0.2,1); border-left: 1px solid var(--border); }
+    .mobile-menu.show { display: block; right: 0; }
+    .mobile-menu a { display: block; padding: 1rem 0; color: var(--text); text-decoration: none; font-size: 1.05rem; font-weight: 600; border-bottom: 1px solid var(--border); transition: all 0.2s; }
+    .mobile-menu a:hover { color: var(--accent); padding-left: 0.5rem; }
+    @media (max-width: 768px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 120px 6% 40px;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255,107,53,0.1) 0%, transparent 70%);
+    }
+    .page-header .label {
+      display: inline-block; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25);
+      color: var(--accent); padding: 0.3rem 0.9rem; border-radius: 100px;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 0.8rem; }
+    .page-header p { color: var(--muted); font-size: 1rem; }
+
+    /* SEARCH & FILTER BAR */
+    .toolbar {
+      padding: 0 6%; margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+    }
+    .search-box {
+      flex: 1; min-width: 220px; position: relative;
+    }
+    .search-box input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.8rem; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none;
+      transition: all 0.3s;
+    }
+    .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+    .search-box input::placeholder { color: var(--muted); }
+    .search-box .search-icon {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      font-size: 1rem; color: var(--muted); pointer-events: none;
+    }
+    .view-toggle {
+      display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    }
+    .view-btn {
+      padding: 0.6rem 1rem; background: transparent; border: none;
+      color: var(--muted); cursor: pointer; font-size: 1rem; transition: all 0.2s;
+    }
+    .view-btn.active { background: rgba(255,107,53,0.15); color: var(--accent); }
+    .view-btn:hover:not(.active) { color: var(--text); }
+
+    /* SERVICES GRID */
+    .services-section { padding: 0 6% 80px; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; transition: all 0.3s; }
+    .services-grid.list-view { grid-template-columns: 1fr; }
+    .services-grid.list-view .svc-card { display: flex; gap: 1.5rem; align-items: center; }
+    .services-grid.list-view .svc-card .qty-section { border-top: none; border-left: 1px solid var(--border); padding-top: 0; padding-left: 1.5rem; min-width: 220px; }
+
+    .svc-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 2rem; transition: all 0.3s; position: relative; overflow: hidden;
+      cursor: pointer; animation: cardIn 0.5s ease both;
+    }
+    .svc-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,107,53,0.04), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .svc-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px var(--shadow); border-color: rgba(255,107,53,0.35); }
+    .svc-card:hover::after { opacity: 1; }
+    .svc-card .card-content { flex: 1; }
+    .svc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .svc-icon-wrap {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,209,102,0.1));
+      display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+    }
+    .svc-price-badge {
+      background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25);
+      color: var(--accent); padding: 0.3rem 0.7rem; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 700;
+    }
+    .svc-card h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .svc-card .desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+
+    /* QUANTITY CONTROLS */
+    .qty-section { border-top: 1px solid var(--border); padding-top: 1.5rem; position: relative; z-index: 1; }
+    .qty-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem; }
+    .qty-controls { display: flex; align-items: center; gap: 0; margin-bottom: 0.6rem; }
+    .qty-btn {
+      width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text); font-size: 1.1rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+    }
+    .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .qty-display {
+      min-width: 60px; text-align: center; font-size: 1.1rem; font-weight: 700;
+      padding: 0 1rem;
+    }
+    .qty-display .unit { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+    .est-price {
+      font-size: 0.82rem; color: var(--gold); font-weight: 600; margin-bottom: 0.8rem;
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .btn-order {
+      width: 100%; height: 46px; background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff; border: none; border-radius: 10px; font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-order:hover:not(:disabled) { box-shadow: var(--glow); transform: translateY(-1px); }
+    .btn-order:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    .btn-order.loading .spinner { display: block; }
+    .btn-order.loading .btn-text { display: none; }
+
+    /* CART */
+    .cart-shell {
+      padding: 0 6% 80px;
+    }
+    .cart-panel {
+      position: sticky;
+      bottom: 1rem;
+      z-index: 850;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: 0 18px 48px var(--shadow);
+      padding: 1rem;
+    }
+    .cart-panel.empty {
+      display: none;
+    }
+    .cart-title {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 0.65rem;
+      font-weight: 800;
+    }
+    .cart-count {
+      min-width: 26px;
+      height: 26px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255,107,53,0.16);
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+    .cart-items {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .cart-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.82rem;
+      padding: 0.42rem 0.65rem;
+    }
+    .cart-remove {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(239,71,111,0.14);
+      color: var(--error);
+      cursor: pointer;
+      font-weight: 900;
+    }
+    .cart-total {
+      min-width: 210px;
+      text-align: right;
+    }
+    .cart-total strong {
+      display: block;
+      color: var(--accent);
+      font-size: 1.3rem;
+      margin-bottom: 0.45rem;
+    }
+    .cart-actions {
+      display: flex;
+      gap: 0.55rem;
+      justify-content: flex-end;
+    }
+    .btn-cart-clear, .btn-cart-checkout {
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 800;
+      padding: 0.68rem 0.9rem;
+    }
+    .btn-cart-clear {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+    }
+    .btn-cart-checkout {
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff;
+    }
+
+    /* PAYMENT MODAL */
+    .payment-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2500;
+      background: rgba(0,0,0,0.68); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center; padding: 1.25rem;
+    }
+    .payment-overlay.show { display: flex; }
+    .payment-modal {
+      width: min(520px, 100%); background: var(--surface);
+      border: 1px solid var(--border); border-radius: 18px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45); overflow: hidden;
+      animation: modalIn 0.25s ease both;
+    }
+    .payment-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1.35rem 1.45rem; border-bottom: 1px solid var(--border);
+    }
+    .payment-head h2 { font-size: 1.1rem; font-weight: 800; }
+    .payment-close {
+      width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text); cursor: pointer; font-size: 1.1rem;
+    }
+    .payment-body { padding: 1.35rem 1.45rem; }
+    .payment-summary {
+      display: grid; gap: 0.55rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+    }
+    .summary-row { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: 0.88rem; }
+    .summary-row strong { color: var(--text); text-align: right; }
+    .summary-row.total { padding-top: 0.55rem; border-top: 1px solid var(--border); color: var(--text); font-weight: 800; }
+    .summary-row.total strong { color: var(--accent); font-size: 1.12rem; }
+    .payment-label { color: var(--muted); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin: 1rem 0 0.65rem; }
+    .payment-options { display: grid; gap: 0.7rem; }
+    .payment-option {
+      display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.8rem;
+      width: 100%; border: 1px solid var(--border); border-radius: 14px;
+      background: transparent; color: var(--text); padding: 0.9rem; cursor: pointer;
+      text-align: left; transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+    .payment-option:hover, .payment-option.active { border-color: rgba(255,107,53,0.45); background: rgba(255,107,53,0.08); }
+    .payment-option.active { transform: translateY(-1px); }
+    .payment-icon {
+      width: 42px; height: 42px; display: grid; place-items: center;
+      border-radius: 12px; background: var(--surface2); color: var(--accent); font-weight: 900;
+    }
+    .payment-title { display: block; font-size: 0.94rem; font-weight: 800; }
+    .payment-desc { display: block; color: var(--muted); font-size: 0.78rem; margin-top: 0.18rem; }
+    .payment-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted); box-shadow: inset 0 0 0 4px var(--surface); }
+    .payment-option.active .payment-radio { border-color: var(--accent); background: var(--accent); }
+    .payment-actions { display: flex; gap: 0.75rem; margin-top: 1.2rem; }
+    .btn-pay-cancel, .btn-pay-confirm {
+      flex: 1; border-radius: 10px; border: 1px solid var(--border);
+      padding: 0.8rem 1rem; font-weight: 800; cursor: pointer;
+    }
+    .btn-pay-cancel { background: transparent; color: var(--text); }
+    .btn-pay-confirm { border: 0; background: linear-gradient(135deg, var(--accent), #e55a25); color: #fff; }
+    .btn-pay-confirm:disabled { opacity: 0.7; cursor: not-allowed; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* NO RESULTS */
+    .no-results {
+      text-align: center; padding: 4rem 2rem; color: var(--muted);
+    }
+    .no-results .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+    .no-results h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+      padding: 1rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4); transform: translateY(100px);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width: 320px;
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.success { background: rgba(6,214,160,0.15); border: 1px solid rgba(6,214,160,0.4); color: var(--success); }
+    .toast.error { background: rgba(239,71,111,0.15); border: 1px solid rgba(239,71,111,0.4); color: var(--error); }
+
+    /* BACK TO TOP */
+    .back-to-top {
+      position: fixed; bottom: 2rem; left: 2rem; z-index: 900;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff; border: none; cursor: pointer; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 25px rgba(255,107,53,0.3);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .back-to-top.show { transform: translateY(0); opacity: 1; }
+    .back-to-top:hover { transform: translateY(-4px) scale(1.05); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      .toolbar { flex-direction: column; }
+      .services-grid { grid-template-columns: 1fr; }
+      .services-grid.list-view .svc-card { flex-direction: column; }
+      .services-grid.list-view .svc-card .qty-section { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 1.5rem; min-width: auto; }
+      .cart-panel { grid-template-columns: 1fr; }
+      .cart-total { text-align: left; }
+      .cart-actions { justify-content: stretch; }
+      .btn-cart-clear, .btn-cart-checkout { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <a href="../HomePage/home.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <ul class="nav-links">
+    <li><a href="../HomePage/home.html">Home</a></li>
+    <li><a href="../LoginPage/userDashboard.html">Dashboard</a></li>
+    <li><a href="services.html" class="active">Services</a></li>
+    <li><a href="../OrdersPage/orders.html">My Orders</a></li>
+  </ul>
+  <div class="nav-right">
+    <div id="userGreet"><div class="user-avatar" id="userInitial">U</div><span id="userName">User</span></div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <div class="toggle-knob" id="toggleKnob">🌙</div>
+    </button>
+    <button class="btn-logout" id="logoutBtn">Logout</button>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="../HomePage/home.html">🏠 Home</a>
+  <a href="../LoginPage/userDashboard.html">Dashboard</a>
+  <a href="services.html">🧺 Services</a>
+  <a href="../OrdersPage/orders.html">📋 My Orders</a>
+</div>
+
+<div class="page-header">
+  <div class="label">🧺 Our Services</div>
+  <h1>Choose your laundry service</h1>
+  <p>Select a service, set quantity, and we'll handle the rest.</p>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search services..." />
+  </div>
+  <div class="view-toggle">
+    <button class="view-btn active" data-view="grid" title="Grid view">▦</button>
+    <button class="view-btn" data-view="list" title="List view">☰</button>
+  </div>
+</div>
+
+<section class="services-section">
+  <div class="services-grid" id="servicesGrid">
+    <!-- Cards rendered by JS -->
+  </div>
+</section>
+
+<section class="cart-shell">
+  <div class="cart-panel empty" id="cartPanel">
+    <div>
+      <div class="cart-title">Cart <span class="cart-count" id="cartCount">0</span></div>
+      <div class="cart-items" id="cartItems"></div>
+    </div>
+    <div class="cart-total">
+      <strong id="cartTotal">Rs. 0</strong>
+      <div class="cart-actions">
+        <button class="btn-cart-clear" type="button" id="clearCartBtn">Clear</button>
+        <button class="btn-cart-checkout" type="button" id="checkoutBtn">Checkout & Pay</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="payment-overlay" id="paymentOverlay" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
+  <div class="payment-modal">
+    <div class="payment-head">
+      <h2 id="paymentTitle">Choose Payment</h2>
+      <button class="payment-close" id="paymentClose" type="button" aria-label="Close payment dialog">x</button>
+    </div>
+    <div class="payment-body">
+      <div class="payment-summary">
+        <div class="summary-row"><span>Service</span><strong id="payService">-</strong></div>
+        <div class="summary-row"><span>Quantity</span><strong id="payQty">-</strong></div>
+        <div class="summary-row"><span>Rate</span><strong id="payRate">-</strong></div>
+        <div class="summary-row total"><span>Total</span><strong id="payTotal">-</strong></div>
+      </div>
+      <div class="payment-label">Payment Method</div>
+      <div class="payment-options" id="paymentOptions">
+        <button class="payment-option active" type="button" data-method="CASH" data-status="PAY_ON_DELIVERY">
+          <span class="payment-icon">C</span>
+          <span><span class="payment-title">Cash on Delivery</span><span class="payment-desc">Pay when your laundry is delivered.</span></span>
+          <span class="payment-radio"></span>
+        </button>
+        <button class="payment-option" type="button" data-method="UPI" data-status="PAID_ONLINE">
+          <span class="payment-icon">U</span>
+          <span><span class="payment-title">UPI</span><span class="payment-desc">Google Pay, PhonePe, Paytm, or any UPI app.</span></span>
+          <span class="payment-radio"></span>
+        </button>
+        <button class="payment-option" type="button" data-method="CARD" data-status="PAID_ONLINE">
+          <span class="payment-icon">K</span>
+          <span><span class="payment-title">Card</span><span class="payment-desc">Debit or credit card payment.</span></span>
+          <span class="payment-radio"></span>
+        </button>
+      </div>
+      <div class="payment-actions">
+        <button class="btn-pay-cancel" id="paymentCancel" type="button">Cancel</button>
+        <button class="btn-pay-confirm" id="paymentConfirm" type="button">Place Order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<script>
+  const SERVICES = [
+    { id: 'wash-fold', icon: 'W', name: 'Wash & Fold', desc: 'Everyday clothes washed with premium detergents and neatly folded. Perfect for shirts, jeans, and casuals.', price: 'Rs. 50/kg', priceNum: 50 },
+    { id: 'dry-cleaning', icon: 'D', name: 'Dry Cleaning', desc: 'Professional dry cleaning for delicate fabrics including suits, wool, silk, and more.', price: 'Rs. 80/kg', priceNum: 80 },
+    { id: 'ironing', icon: 'I', name: 'Ironing', desc: 'Crisp, wrinkle-free results for formal wear and everyday clothes.', price: 'Rs. 50/kg', priceNum: 50 },
+    { id: 'stain-removal', icon: 'S', name: 'Stain Removal', desc: 'Stubborn stains treated with specialist, fabric-safe products.', price: 'Rs. 50/kg', priceNum: 50 },
+    { id: 'express', icon: 'E', name: 'Express Delivery', desc: 'Same-day or next-morning service when you need laundry fast.', price: 'Rs. 50/kg', priceNum: 50 },
+    { id: 'subscription', icon: 'P', name: 'Subscription Plans', desc: 'Weekly or monthly laundry plans for regular hostel needs.', price: 'Rs. 50/kg', priceNum: 50 }
+  ];
+
+  const loggedUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+  if (loggedUser) {
+    const initial = (loggedUser.name || 'U')[0].toUpperCase();
+    document.getElementById('userInitial').textContent = initial;
+    document.getElementById('userName').textContent = loggedUser.name || loggedUser.email;
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.removeItem('loggedInUser');
+    window.location.href = '../LoginPage/login.html';
+  });
+
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  const quantities = {};
+  SERVICES.forEach(s => { quantities[s.id] = 1; });
+  let cart = JSON.parse(localStorage.getItem('dhobiwaala-cart') || '[]');
+  let selectedPayment = { method: 'CASH', status: 'PAY_ON_DELIVERY' };
+
+  function saveCart() { localStorage.setItem('dhobiwaala-cart', JSON.stringify(cart)); }
+  function getCartTotal() { return cart.reduce((sum, item) => sum + item.priceNum * item.quantity, 0); }
+  function getCartKg() { return cart.reduce((sum, item) => sum + item.quantity, 0); }
+
+  function renderCart() {
+    const panel = document.getElementById('cartPanel');
+    const itemsEl = document.getElementById('cartItems');
+    panel.classList.toggle('empty', cart.length === 0);
+    document.getElementById('cartCount').textContent = cart.length;
+    document.getElementById('cartTotal').textContent = 'Rs. ' + getCartTotal();
+    itemsEl.innerHTML = cart.map(item => '<span class="cart-chip">' + item.name + ' - ' + item.quantity + 'kg - Rs. ' + (item.priceNum * item.quantity) + '<button class="cart-remove" type="button" data-remove-id="' + item.id + '">x</button></span>').join('');
+    document.querySelectorAll('[data-remove-id]').forEach(btn => {
+      btn.addEventListener('click', () => removeFromCart(btn.dataset.removeId));
+    });
+  }
+
+  function changeQty(id, delta) {
+    quantities[id] = Math.max(1, (quantities[id] || 1) + delta);
+    document.getElementById('qty-' + id).textContent = quantities[id];
+    const svc = SERVICES.find(s => s.id === id);
+    if (svc) document.getElementById('est-' + id).textContent = 'Rs. ' + (svc.priceNum * quantities[id]);
+  }
+
+  function addToCart(service) {
+    const quantity = quantities[service.id] || 1;
+    const existing = cart.find(item => item.id === service.id);
+    if (existing) existing.quantity += quantity;
+    else cart.push({ id: service.id, name: service.name, priceNum: service.priceNum, quantity });
+    saveCart();
+    renderCart();
+    showToast(service.name + ' added to cart.');
+  }
+
+  function removeFromCart(id) { cart = cart.filter(item => item.id !== id); saveCart(); renderCart(); }
+  function clearCart() { cart = []; saveCart(); renderCart(); }
+
+  function openPaymentModal() {
+    if (!cart.length) { showToast('Please add at least one service to cart.', 'error'); return; }
+    document.getElementById('payService').textContent = cart.map(item => item.name + ' (' + item.quantity + 'kg)').join(', ');
+    document.getElementById('payQty').textContent = getCartKg() + ' kg total';
+    document.getElementById('payRate').textContent = cart.length + ' service' + (cart.length === 1 ? '' : 's');
+    document.getElementById('payTotal').textContent = 'Rs. ' + getCartTotal();
+    document.getElementById('paymentOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePaymentModal() {
+    document.getElementById('paymentOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  async function placeCashOrder(orderPayload) {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderPayload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.message || 'Failed to place order.');
+    }
+    return res.json().catch(() => null);
+  }
+
+  function rememberPayment(order, orderPayload) {
+    if (order && order.id) {
+      const savedPayments = JSON.parse(localStorage.getItem('dhobiwaala-payments') || '{}');
+      savedPayments[order.id] = {
+        paymentMethod: orderPayload.paymentMethod,
+        paymentStatus: orderPayload.paymentStatus,
+        totalAmount: orderPayload.totalAmount,
+        cartItems: cart
+      };
+      localStorage.setItem('dhobiwaala-payments', JSON.stringify(savedPayments));
+    }
+  }
+
+  async function confirmCartOrder() {
+    if (!loggedUser) { window.location.href = '../LoginPage/login.html'; return; }
+    if (!cart.length) return;
+    const confirmBtn = document.getElementById('paymentConfirm');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Placing...';
+    const totalAmount = getCartTotal();
+    const totalKg = getCartKg();
+    const combinedService = cart.map(item => item.name + ' (' + item.quantity + 'kg)').join(' + ');
+    const orderPayload = {
+      userId: loggedUser.id,
+      status: 'PENDING',
+      service: 'Cart: ' + combinedService,
+      quantity: totalKg,
+      paymentMethod: selectedPayment.method,
+      paymentStatus: selectedPayment.status,
+      totalAmount
+    };
+    try {
+      const order = await placeCashOrder(orderPayload);
+      rememberPayment(order, orderPayload);
+      clearCart();
+      closePaymentModal();
+      showToast('Cart order placed with ' + selectedPayment.method + '. Redirecting...');
+      setTimeout(() => { window.location.href = '../OrdersPage/orders.html'; }, 1400);
+    } catch (error) {
+      showToast(error.message || 'Cannot connect to server.', 'error');
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Place Order';
+    }
+  }
+
+  function renderServices(filter = '') {
+    const grid = document.getElementById('servicesGrid');
+    const filtered = SERVICES.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.desc.toLowerCase().includes(filter.toLowerCase()));
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="no-results" style="grid-column:1/-1"><div class="icon">Search</div><h3>No services found</h3><p>Try a different search term.</p></div>';
+      return;
+    }
+    grid.innerHTML = filtered.map((s, i) => '<div class="svc-card" style="animation-delay:' + (i * 80) + 'ms"><div class="card-content"><div class="svc-header"><div class="svc-icon-wrap">' + s.icon + '</div><div class="svc-price-badge">' + s.price + '</div></div><h2>' + s.name + '</h2><p class="desc">' + s.desc + '</p></div><div class="qty-section"><div class="qty-label">Quantity (kg)</div><div class="qty-controls"><button class="qty-btn" data-qty-id="' + s.id + '" data-delta="-1">-</button><div class="qty-display"><span id="qty-' + s.id + '">' + (quantities[s.id] || 1) + '</span><div class="unit">kg</div></div><button class="qty-btn" data-qty-id="' + s.id + '" data-delta="1">+</button></div><div class="est-price">Estimated: <span id="est-' + s.id + '">Rs. ' + (s.priceNum * (quantities[s.id] || 1)) + '</span></div><button class="btn-order" id="btn-' + s.id + '" data-add-id="' + s.id + '"><div class="spinner"></div><span class="btn-text">Add to Cart</span></button></div></div>').join('');
+    document.querySelectorAll('[data-qty-id]').forEach(btn => {
+      btn.addEventListener('click', () => changeQty(btn.dataset.qtyId, Number(btn.dataset.delta)));
+    });
+    document.querySelectorAll('[data-add-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const service = SERVICES.find(s => s.id === btn.dataset.addId);
+        if (service) addToCart(service);
+      });
+    });
+  }
+
+  renderServices();
+  renderCart();
+
+  document.getElementById('searchInput').addEventListener('input', (e) => renderServices(e.target.value));
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('servicesGrid').classList.toggle('list-view', btn.dataset.view === 'list');
+    });
+  });
+  document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+  document.getElementById('checkoutBtn').addEventListener('click', openPaymentModal);
+  document.querySelectorAll('.payment-option').forEach(option => {
+    option.addEventListener('click', () => {
+      document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
+      option.classList.add('active');
+      selectedPayment = { method: option.dataset.method, status: option.dataset.status };
+    });
+  });
+  document.getElementById('paymentClose').addEventListener('click', closePaymentModal);
+  document.getElementById('paymentCancel').addEventListener('click', closePaymentModal);
+  document.getElementById('paymentOverlay').addEventListener('click', (event) => { if (event.target.id === 'paymentOverlay') closePaymentModal(); });
+  document.getElementById('paymentConfirm').addEventListener('click', confirmCartOrder);
+
+  const themeToggle = document.getElementById('themeToggle');
+  const toggleKnob = document.getElementById('toggleKnob');
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('dhobiwaala-theme', theme);
+    toggleKnob.textContent = theme === 'dark' ? 'M' : 'S';
+  }
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+  applyTheme(localStorage.getItem('dhobiwaala-theme') || 'dark');
+
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function toggleMobileMenu() {
+    hamburger.classList.toggle('active');
+    mobileMenu.classList.toggle('show');
+    mobileOverlay.classList.toggle('show');
+    document.body.style.overflow = mobileMenu.classList.contains('show') ? 'hidden' : '';
+  }
+  hamburger.addEventListener('click', toggleMobileMenu);
+  mobileOverlay.addEventListener('click', toggleMobileMenu);
+  window.addEventListener('scroll', () => document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50));
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => backToTop.classList.toggle('show', window.scrollY > 300));
+  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+</body>
+</html>

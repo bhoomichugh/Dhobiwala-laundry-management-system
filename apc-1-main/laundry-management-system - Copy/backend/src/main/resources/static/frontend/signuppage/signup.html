@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — DhobiWaala</title>
+  <meta name="description" content="Create your DhobiWaala account and get started with smart laundry services." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    if (sessionStorage.getItem('loggedInUser')) window.location.href = '../LoginPage/userDashboard.html';
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #13131f; --accent: #ff6b35; --gold: #ffd166;
+      --text: #e8e8f0; --muted: #8888a8; --error: #ef476f; --success: #06d6a0;
+      --border: rgba(255,107,53,0.18); --glow: 0 0 30px rgba(255,107,53,0.25);
+    }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 100px 2rem 2rem;
+      background-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,107,53,0.1) 0%, transparent 60%);
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 70px;
+      background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); text-decoration: none; }
+    .nav-logo span { color: var(--gold); }
+    .nav-right a { font-size: 0.87rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-right a:hover { color: var(--text); }
+    .card {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 24px; backdrop-filter: blur(20px);
+      padding: 2.8rem; width: 100%; max-width: 460px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      animation: fadeUp 0.5s ease;
+    }
+    .card-icon { font-size: 2.5rem; text-align: center; margin-bottom: 1.2rem; }
+    .card h1 { font-size: 1.7rem; font-weight: 800; text-align: center; margin-bottom: 0.4rem; letter-spacing: -0.5px; }
+    .card .subtitle { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; letter-spacing: 0.03em; text-transform: uppercase; }
+    input {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 0.85rem 1rem; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; transition: all 0.2s; outline: none;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
+    input::placeholder { color: var(--muted); }
+    .password-wrapper { position: relative; }
+    .password-wrapper input { padding-right: 3rem; }
+    .toggle-pw {
+      position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem;
+    }
+    .toggle-pw:hover { color: var(--text); }
+    .strength-bar { height: 3px; border-radius: 100px; margin-top: 0.5rem; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 100px; transition: all 0.3s; width: 0%; }
+    .strength-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+    .btn-signup {
+      width: 100%; height: 52px; background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff; border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 0.8rem;
+      transition: all 0.3s; box-shadow: var(--glow);
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-signup:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 40px rgba(255,107,53,0.4); }
+    .btn-signup:disabled { opacity: 0.7; cursor: not-allowed; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    .btn-signup.loading .spinner { display: block; }
+    .btn-signup.loading .btn-text { display: none; }
+    .msg-box {
+      border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.875rem;
+      margin-top: 1rem; display: none; text-align: center;
+    }
+    .msg-box.error { background: rgba(239,71,111,0.1); border: 1px solid rgba(239,71,111,0.3); color: var(--error); }
+    .msg-box.success { background: rgba(6,214,160,0.1); border: 1px solid rgba(6,214,160,0.3); color: var(--success); }
+    .msg-box.show { display: block; }
+    .card-footer { text-align: center; margin-top: 1.5rem; font-size: 0.87rem; color: var(--muted); }
+    .card-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .card-footer a:hover { text-decoration: underline; }
+    .terms { font-size: 0.78rem; color: var(--muted); text-align: center; margin-top: 1rem; line-height: 1.5; }
+    .terms a { color: var(--accent); text-decoration: none; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="../HomePage/home.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <div class="nav-right">
+    <a href="../LoginPage/login.html">Already have an account? Sign in →</a>
+  </div>
+</nav>
+
+<div class="card">
+  <div class="card-icon">🚀</div>
+  <h1>Create Account</h1>
+  <p class="subtitle">Join DhobiWaala and never worry about laundry again</p>
+
+  <div class="form-group">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="Your full name" autocomplete="name" />
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+  </div>
+
+  <div class="form-group">
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" placeholder="+91 98765 43210" autocomplete="tel" />
+  </div>
+
+  <div class="form-group">
+    <label for="password">Password</label>
+    <div class="password-wrapper">
+      <input type="password" id="password" placeholder="Minimum 6 characters" autocomplete="new-password" />
+      <button class="toggle-pw" id="togglePw" type="button" aria-label="Toggle password visibility">👁️</button>
+    </div>
+    <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+    <div class="strength-label" id="strengthLabel"></div>
+  </div>
+
+  <button class="btn-signup" id="signupBtn">
+    <div class="spinner"></div>
+    <span class="btn-text">Create Account →</span>
+  </button>
+
+  <div class="msg-box" id="msgBox"></div>
+
+  <p class="terms">By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
+
+  <div class="card-footer">
+    Already have an account? <a href="../LoginPage/login.html">Sign in</a>
+  </div>
+</div>
+
+<script>
+  const nameEl = document.getElementById('name');
+  const emailEl = document.getElementById('email');
+  const phoneEl = document.getElementById('phone');
+  const passwordEl = document.getElementById('password');
+  const signupBtn = document.getElementById('signupBtn');
+  const msgBox = document.getElementById('msgBox');
+  const togglePw = document.getElementById('togglePw');
+  const strengthFill = document.getElementById('strengthFill');
+  const strengthLabel = document.getElementById('strengthLabel');
+
+  togglePw.addEventListener('click', () => {
+    const isText = passwordEl.type === 'text';
+    passwordEl.type = isText ? 'password' : 'text';
+    togglePw.textContent = isText ? '👁️' : '🙈';
+  });
+
+  passwordEl.addEventListener('input', () => {
+    const val = passwordEl.value;
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['#ef476f', '#ff9f43', '#ffd166', '#06d6a0', '#06d6a0'];
+    const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+    strengthFill.style.width = `${(score / 5) * 100}%`;
+    strengthFill.style.background = colors[score - 1] || '';
+    strengthLabel.textContent = val ? labels[score] || 'Very Strong' : '';
+    strengthLabel.style.color = colors[score - 1] || 'var(--muted)';
+  });
+
+  function showMsg(msg, type) {
+    msgBox.textContent = msg;
+    msgBox.className = `msg-box ${type} show`;
+  }
+
+  async function handleSignup() {
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const phone = phoneEl.value.trim();
+    const password = passwordEl.value;
+
+    msgBox.classList.remove('show');
+
+    if (!name || !email || !phone || !password) { showMsg('Please fill in all fields.', 'error'); return; }
+    if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); return; }
+
+    signupBtn.disabled = true;
+    signupBtn.classList.add('loading');
+
+    try {
+      const res = await fetch('/api/users/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password, role: 'USER' })
+      });
+
+      if (res.ok) {
+        showMsg('🎉 Account created! Redirecting to login...', 'success');
+        setTimeout(() => { window.location.href = '../LoginPage/login.html'; }, 1800);
+      } else if (res.status === 409) {
+        showMsg('This email is already registered. Please login.', 'error');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showMsg(err.message || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (e) {
+      showMsg('Cannot connect to server. Make sure the backend is running.', 'error');
+    } finally {
+      signupBtn.disabled = false;
+      signupBtn.classList.remove('loading');
+    }
+  }
+
+  signupBtn.addEventListener('click', handleSignup);
+  [nameEl, emailEl, phoneEl, passwordEl].forEach(el =>
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') handleSignup(); })
+  );
+</script>
+</body>
+</html>

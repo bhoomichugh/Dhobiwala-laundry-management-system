@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Services – DhobiWaala Admin</title>
+  <meta name="description" content="DhobiWaala Admin – Manage orders grouped by service type."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #13131f; --surface2: #1c1c2e;
+      --accent: #ff6b35; --gold: #ffd166; --text: #e8e8f0;
+      --muted: #8888a8; --success: #06d6a0; --error: #ef476f;
+      --border: rgba(255,107,53,0.18); --glow: 0 0 30px rgba(255,107,53,0.25);
+    }
+    html, body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    .bg-blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .blob1 { top: -200px; right: -100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 70%); }
+    .blob2 { bottom: -150px; left: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,209,102,0.04) 0%, transparent 70%); }
+
+    /* NAVBAR */
+    nav { position: fixed; top: 0; left: 0; right: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 100; }
+    .nav-logo { font-size: 1.45rem; font-weight: 800; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; transition: color 0.2s, background 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); background: rgba(255,255,255,0.06); }
+    .btn-logout { background: rgba(239,71,111,0.12); border: 1px solid rgba(239,71,111,0.25); color: var(--error); padding: 0.45rem 1.1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-logout:hover { background: rgba(239,71,111,0.22); transform: translateY(-1px); }
+
+    /* PAGE */
+    .page { position: relative; z-index: 1; padding-top: 70px; }
+    .page-header { padding: 2.5rem 2.5rem 2rem; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, rgba(255,107,53,0.04) 0%, transparent 60%); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .page-header h1 { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .btn-refresh { background: rgba(255,107,53,0.1); border: 1px solid var(--border); color: var(--accent); padding: 0.6rem 1.2rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+    .btn-refresh:hover { background: rgba(255,107,53,0.2); transform: translateY(-1px); }
+    .refresh-icon { display: inline-block; transition: transform 0.5s; }
+    .btn-refresh.loading .refresh-icon { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* CONTENT */
+    .content { padding: 2rem 2.5rem 3rem; }
+
+    /* SERVICE GROUP */
+    .service-group { margin-bottom: 2rem; animation: fadeUp 0.5s ease both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .group-header {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+      padding: 1rem 1.4rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 14px;
+      position: relative; overflow: hidden;
+    }
+    .group-header::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--accent), var(--gold)); border-radius: 14px 0 0 14px; }
+    .group-icon { font-size: 1.8rem; }
+    .group-name { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .group-count { background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.25); color: var(--accent); padding: 0.2rem 0.7rem; border-radius: 50px; font-size: 0.78rem; font-weight: 700; margin-left: auto; }
+
+    /* ORDERS IN GROUP */
+    .orders-list { display: flex; flex-direction: column; gap: 0.6rem; padding-left: 0.5rem; }
+    .order-item {
+      background: var(--surface2); border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px; padding: 1rem 1.2rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      transition: border-color 0.2s, transform 0.18s;
+    }
+    .order-item:hover { border-color: rgba(255,107,53,0.15); transform: translateX(4px); }
+    .order-info { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+    .order-id { font-size: 0.75rem; font-weight: 700; color: var(--accent); font-family: monospace; background: rgba(255,107,53,0.08); padding: 0.2rem 0.5rem; border-radius: 5px; }
+    .order-email { font-size: 0.85rem; color: var(--muted); }
+    .order-qty { font-size: 0.85rem; color: var(--text); font-weight: 600; }
+    .order-qty span { color: var(--muted); font-weight: 400; }
+
+    /* STATUS BADGES */
+    .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.7rem; border-radius: 50px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge::before { content: '●'; font-size: 0.5rem; }
+    .badge-pending { background: rgba(255,107,53,0.15); color: var(--accent); border: 1px solid rgba(255,107,53,0.3); }
+    .badge-completed { background: rgba(6,214,160,0.12); color: var(--success); border: 1px solid rgba(6,214,160,0.25); }
+    .badge-cancelled { background: rgba(239,71,111,0.12); color: var(--error); border: 1px solid rgba(239,71,111,0.25); }
+
+    /* ACTION BUTTONS */
+    .action-btns { display: flex; gap: 0.5rem; }
+    .btn-complete { padding: 0.38rem 0.85rem; border-radius: 7px; border: 1px solid rgba(6,214,160,0.35); color: var(--success); background: rgba(6,214,160,0.08); font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.18s; }
+    .btn-complete:hover { background: rgba(6,214,160,0.18); transform: translateY(-1px); }
+    .btn-delete { padding: 0.38rem 0.85rem; border-radius: 7px; border: 1px solid rgba(239,71,111,0.35); color: var(--error); background: rgba(239,71,111,0.08); font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.18s; }
+    .btn-delete:hover { background: rgba(239,71,111,0.18); transform: translateY(-1px); }
+    .btn-complete:disabled, .btn-delete:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 5rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .empty-icon { font-size: 4rem; opacity: 0.3; }
+    .empty-title { font-size: 1.2rem; font-weight: 700; color: var(--muted); }
+    .empty-sub { font-size: 0.875rem; color: var(--muted); opacity: 0.7; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.9rem 1.4rem; border-radius: 12px; font-size: 0.9rem; font-weight: 600; z-index: 999; display: none; animation: toastIn 0.3s ease; }
+    @keyframes toastIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .toast-success { background: rgba(6,214,160,0.15); border: 1px solid rgba(6,214,160,0.3); color: var(--success); }
+    .toast-error { background: rgba(239,71,111,0.15); border: 1px solid rgba(239,71,111,0.3); color: var(--error); }
+
+    /* Loading */
+    .loading-msg { text-align: center; padding: 4rem; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid rgba(255,107,53,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    @media (max-width: 768px) {
+      .content { padding: 1.5rem 1rem 3rem; }
+      .page-header { padding: 2rem 1rem 1.5rem; }
+      .order-item { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-blob blob1"></div>
+<div class="bg-blob blob2"></div>
+
+<nav>
+  <a href="adminDashboard.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <div class="nav-links">
+    <a href="adminDashboard.html">Dashboard</a>
+    <a href="manageOrders.html">Manage Orders</a>
+    <a href="manageUsers.html">Manage Users</a>
+    <a href="viewReports.html">View Reports</a>
+    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🧺 Manage Services</h1>
+      <p>Orders grouped by service type — complete or delete individual orders.</p>
+    </div>
+    <button class="btn-refresh" id="refreshBtn" onclick="loadOrders()">
+      <span class="refresh-icon">↻</span> Refresh
+    </button>
+  </div>
+
+  <div class="content" id="content">
+    <div class="loading-msg"><div class="spinner"></div> Loading orders…</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  if (!sessionStorage.getItem('adminToken')) {
+    window.location.href = 'adminLogin.html';
+  }
+
+  function handleLogout() { sessionStorage.clear(); window.location.href = 'adminLogin.html'; }
+
+  const SERVICE_ICONS = {
+    'Wash & Fold': '🧺',
+    'Dry Cleaning': '👔',
+    'Ironing': '🧲',
+    'Wash & Iron': '✨',
+    'Express': '⚡',
+    'Stain Removal': '🧪',
+    'Bedding & Linen': '🛏️',
+    'Shoe Cleaning': '👟',
+    'Default': '🧹'
+  };
+
+  function getServiceIcon(name) {
+    return SERVICE_ICONS[name] || Object.entries(SERVICE_ICONS).find(([k]) => name && name.toLowerCase().includes(k.toLowerCase()))?.[1] || SERVICE_ICONS['Default'];
+  }
+
+  function getStatusBadge(status) {
+    const s = (status || '').toUpperCase();
+    if (s === 'COMPLETED') return `<span class="badge badge-completed">Completed</span>`;
+    if (s === 'CANCELLED') return `<span class="badge badge-cancelled">Cancelled</span>`;
+    return `<span class="badge badge-pending">Pending</span>`;
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✓ ' : '⚠ ') + msg;
+    t.className = `toast toast-${type}`;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+
+  let allOrders = [];
+
+  function renderGroups() {
+    const content = document.getElementById('content');
+    if (allOrders.length === 0) {
+      content.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No orders found</div><div class="empty-sub">No orders are currently in the system.</div></div>`;
+      return;
+    }
+
+    // Group by service
+    const groups = {};
+    allOrders.forEach(order => {
+      const svc = order.serviceType || order.service || 'Unknown';
+      if (!groups[svc]) groups[svc] = [];
+      groups[svc].push(order);
+    });
+
+    content.innerHTML = Object.entries(groups).map(([serviceName, orders], gi) => {
+      const icon = getServiceIcon(serviceName);
+      const orderItems = orders.map(order => {
+        const id = order.id || order.orderId;
+        const statusUp = (order.status || '').toUpperCase();
+        const isDone = statusUp === 'COMPLETED' || statusUp === 'CANCELLED';
+        return `<div class="order-item" id="order-${id}">
+          <div class="order-info">
+            <span class="order-id">#${id}</span>
+            <span class="order-email">${order.userEmail || order.email || '—'}</span>
+            <span class="order-qty">${order.quantity ?? order.weight ?? '—'} <span>kg</span></span>
+            ${getStatusBadge(order.status)}
+          </div>
+          <div class="action-btns">
+            <button class="btn-complete" onclick="completeOrder(${id}, this)" ${isDone ? 'disabled' : ''}>✓ Complete</button>
+            <button class="btn-delete" onclick="deleteOrder(${id}, this)">🗑 Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div class="service-group" style="animation-delay:${gi * 0.07}s">
+        <div class="group-header">
+          <span class="group-icon">${icon}</span>
+          <span class="group-name">${serviceName}</span>
+          <span class="group-count">${orders.length} order${orders.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="orders-list">${orderItems}</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function completeOrder(id, btn) {
+    const row = btn.closest('.order-item');
+    row.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Completed' })
+      });
+      if (res.ok) {
+        showToast(`Order #${id} marked as Completed.`);
+        // Update in allOrders
+        const order = allOrders.find(o => (o.id || o.orderId) == id);
+        if (order) order.status = 'Completed';
+        renderGroups();
+      } else {
+        showToast('Failed to update order.', 'error');
+        row.querySelectorAll('button').forEach(b => b.disabled = false);
+      }
+    } catch(e) {
+      showToast('Connection error.', 'error');
+      row.querySelectorAll('button').forEach(b => b.disabled = false);
+    }
+  }
+
+  async function deleteOrder(id, btn) {
+    const row = btn.closest('.order-item');
+    if (!confirm(`Delete order #${id}? This action cannot be undone.`)) return;
+    row.querySelectorAll('button').forEach(b => b.disabled = true);
+    row.style.opacity = '0.5';
+    try {
+      const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        allOrders = allOrders.filter(o => (o.id || o.orderId) != id);
+        showToast(`Order #${id} deleted.`);
+        renderGroups();
+      } else {
+        showToast('Failed to delete order.', 'error');
+        row.querySelectorAll('button').forEach(b => b.disabled = false);
+        row.style.opacity = '1';
+      }
+    } catch(e) {
+      showToast('Connection error.', 'error');
+      row.querySelectorAll('button').forEach(b => b.disabled = false);
+      row.style.opacity = '1';
+    }
+  }
+
+  async function loadOrders() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('loading');
+    document.getElementById('content').innerHTML = '<div class="loading-msg"><div class="spinner"></div> Loading orders…</div>';
+    try {
+      const res = await fetch('/api/orders');
+      allOrders = await res.json();
+      if (!Array.isArray(allOrders)) allOrders = [];
+      renderGroups();
+    } catch(e) {
+      document.getElementById('content').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Failed to load orders</div><div class="empty-sub">Check your server connection and try again.</div></div>`;
+    } finally {
+      btn.classList.remove('loading');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadOrders);
+</script>
+</body>
+</html>

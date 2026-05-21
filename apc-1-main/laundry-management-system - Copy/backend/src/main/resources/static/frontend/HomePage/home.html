@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DhobiWaala — Smart Laundry for Students</title>
+  <meta name="description" content="DhobiWaala offers affordable, fast, and eco-friendly laundry services for students. Book your pickup today!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    if (sessionStorage.getItem('loggedInUser')) window.location.href = '../LoginPage/userDashboard.html';
+    if (sessionStorage.getItem('adminToken')) window.location.href = '../AdminLoginPage/adminDashboard.html';
+    // Apply theme before render to prevent flash
+    (function() {
+      const t = localStorage.getItem('dhobiwaala-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── THEME VARIABLES ── */
+    :root, [data-theme="dark"] {
+      --bg: #0a0a0f;
+      --surface: #13131f;
+      --surface2: #1c1c2e;
+      --accent: #ff6b35;
+      --gold: #ffd166;
+      --text: #e8e8f0;
+      --muted: #8888a8;
+      --success: #06d6a0;
+      --border: rgba(255,107,53,0.18);
+      --glow: 0 0 30px rgba(255,107,53,0.25);
+      --card-bg: rgba(255,255,255,0.03);
+      --nav-bg: rgba(10,10,15,0.85);
+      --shadow: rgba(0,0,0,0.3);
+    }
+    [data-theme="light"] {
+      --bg: #f5f3f0;
+      --surface: #ffffff;
+      --surface2: #f0ece6;
+      --accent: #e85d26;
+      --gold: #d4a030;
+      --text: #1a1a2e;
+      --muted: #6b6b80;
+      --success: #05b88a;
+      --border: rgba(228,93,38,0.15);
+      --glow: 0 0 20px rgba(228,93,38,0.15);
+      --card-bg: rgba(0,0,0,0.02);
+      --nav-bg: rgba(245,243,240,0.92);
+      --shadow: rgba(0,0,0,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    /* ── PAGE TRANSITION ── */
+    .page-transition {
+      position: fixed; inset: 0; z-index: 99999;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      pointer-events: none;
+    }
+    body.page-exit .page-transition {
+      animation: pageWipe 0.5s ease forwards;
+    }
+    @keyframes pageWipe {
+      0% { transform: scaleY(0); transform-origin: bottom; }
+      50% { transform: scaleY(1); transform-origin: bottom; }
+      50.1% { transform-origin: top; }
+      100% { transform: scaleY(0); transform-origin: top; }
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 70px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 4px 30px var(--shadow); }
+    .nav-logo { font-size: 1.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; text-decoration: none; }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links .btn-nav {
+      background: var(--accent); color: #fff; padding: 0.45rem 1.2rem;
+      border-radius: 8px; font-weight: 600; transition: all 0.2s;
+    }
+    .nav-links .btn-nav:hover { background: #e55a25; transform: translateY(-1px); box-shadow: var(--glow); }
+
+    /* NAV RIGHT CONTROLS */
+    .nav-controls { display: flex; align-items: center; gap: 0.8rem; }
+
+    /* THEME TOGGLE */
+    .theme-toggle {
+      width: 52px; height: 28px; border-radius: 100px; border: none;
+      background: var(--surface2); cursor: pointer; position: relative;
+      transition: background 0.3s; padding: 0; flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .theme-toggle .toggle-knob {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent); position: absolute; top: 2px; left: 2px;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    [data-theme="light"] .theme-toggle .toggle-knob { transform: translateX(24px); }
+
+    /* HAMBURGER */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; background: none;
+      border: none; cursor: pointer; padding: 4px; z-index: 1001;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2.5px; background: var(--text);
+      border-radius: 2px; transition: all 0.35s;
+    }
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* MOBILE MENU */
+    .mobile-overlay {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .mobile-overlay.show { display: block; opacity: 1; }
+    .mobile-menu {
+      display: none; position: fixed; top: 0; right: -300px; z-index: 1000;
+      width: 280px; height: 100vh; background: var(--surface);
+      padding: 90px 2rem 2rem; transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
+      border-left: 1px solid var(--border); overflow-y: auto;
+    }
+    .mobile-menu.show { display: block; right: 0; }
+    .mobile-menu a {
+      display: block; padding: 1rem 0; color: var(--text); text-decoration: none;
+      font-size: 1.05rem; font-weight: 600; border-bottom: 1px solid var(--border);
+      transition: color 0.2s, padding-left 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--accent); padding-left: 0.5rem; }
+    .mobile-menu .btn-nav {
+      display: inline-block; margin-top: 1.5rem; background: var(--accent);
+      color: #fff; padding: 0.7rem 1.5rem; border-radius: 10px;
+      font-weight: 700; text-align: center; width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center;
+      padding: 100px 6% 60px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,107,53,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    /* Floating particles */
+    .hero-particles {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%; opacity: 0.15;
+      animation: particleFloat linear infinite;
+    }
+    @keyframes particleFloat {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.15; }
+      90% { opacity: 0.15; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3);
+      color: var(--accent); padding: 0.4rem 1rem; border-radius: 100px;
+      font-size: 0.82rem; font-weight: 600; letter-spacing: 0.05em;
+      margin-bottom: 2rem; animation: fadeDown 0.6s ease;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      font-weight: 900; line-height: 1.1; letter-spacing: -1.5px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.7s ease 0.1s both;
+    }
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.15rem; color: var(--muted); max-width: 560px;
+      line-height: 1.7; margin-bottom: 2.5rem;
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.7s ease 0.3s both; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff; padding: 0.85rem 2rem; border-radius: 12px;
+      font-weight: 700; font-size: 1rem; text-decoration: none;
+      box-shadow: var(--glow); transition: all 0.3s;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 40px rgba(255,107,53,0.4); }
+    .btn-outline {
+      border: 1.5px solid var(--border); color: var(--text); padding: 0.85rem 2rem;
+      border-radius: 12px; font-weight: 600; font-size: 1rem; text-decoration: none;
+      transition: all 0.3s; background: transparent;
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,107,53,0.06); }
+
+    /* Hero floating cards */
+    .hero-stats {
+      display: flex; gap: 1.5rem; margin-top: 3.5rem; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.7s ease 0.4s both;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.2rem 1.8rem; text-align: center;
+      backdrop-filter: blur(10px); transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px var(--shadow); }
+    .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+    .stat-card .label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ── FEATURES ── */
+    .section { padding: 100px 6%; }
+    .section-label {
+      display: inline-block; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25);
+      color: var(--accent); padding: 0.3rem 0.9rem; border-radius: 100px;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .section-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.8px; margin-bottom: 1rem; }
+    .section-sub { color: var(--muted); font-size: 1.05rem; line-height: 1.7; max-width: 520px; }
+    .section-header { margin-bottom: 3.5rem; }
+
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+      padding: 2rem; transition: all 0.3s; opacity: 0; transform: translateY(30px);
+    }
+    .feature-card.visible { opacity: 1; transform: translateY(0); }
+    .feature-card:hover { border-color: rgba(255,107,53,0.4); transform: translateY(-6px); box-shadow: 0 20px 40px var(--shadow); }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,209,102,0.1));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 1.2rem;
+    }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .feature-card p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── HOW IT WORKS ── */
+    .how-section { background: var(--surface); }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; position: relative; }
+    .steps-grid::before {
+      content: '';
+      position: absolute; top: 40px; left: 10%; right: 10%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--gold), transparent);
+      opacity: 0.3;
+    }
+    .step {
+      text-align: center; padding: 1.5rem; opacity: 0; transform: translateY(30px); transition: all 0.5s;
+    }
+    .step.visible { opacity: 1; transform: translateY(0); }
+    .step-num {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #e55a25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin: 0 auto 1.2rem; box-shadow: var(--glow);
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .step p { font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── SERVICES PREVIEW ── */
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .svc-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+      padding: 2rem; transition: all 0.3s; opacity: 0; transform: translateY(30px);
+      position: relative; overflow: hidden;
+    }
+    .svc-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+    }
+    .svc-card:hover::before { transform: scaleX(1); }
+    .svc-card.visible { opacity: 1; transform: translateY(0); }
+    .svc-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px var(--shadow); }
+    .svc-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+    .svc-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .svc-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+    .svc-price { font-size: 0.95rem; font-weight: 700; color: var(--accent); }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .testimonial-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+      padding: 2rem; opacity: 0; transform: translateY(30px); transition: all 0.4s;
+      position: relative;
+    }
+    .testimonial-card.visible { opacity: 1; transform: translateY(0); }
+    .testimonial-card:hover { transform: translateY(-4px); box-shadow: 0 15px 35px var(--shadow); }
+    .testimonial-card .quote-icon {
+      font-size: 2rem; color: var(--accent); opacity: 0.3; margin-bottom: 1rem;
+    }
+    .testimonial-card .text { font-size: 0.95rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; font-style: italic; }
+    .testimonial-card .author { display: flex; align-items: center; gap: 0.8rem; }
+    .testimonial-card .avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff; font-size: 1rem;
+    }
+    .testimonial-card .author-info .name { font-weight: 700; font-size: 0.9rem; }
+    .testimonial-card .author-info .role { font-size: 0.78rem; color: var(--muted); }
+    .testimonial-card .stars { color: var(--gold); font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 0.8rem; }
+
+    /* ── FAQ ── */
+    .faq-list { max-width: 700px; display: flex; flex-direction: column; gap: 0.8rem; }
+    .faq-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; transition: all 0.3s;
+      opacity: 0; transform: translateY(20px);
+    }
+    .faq-item.visible { opacity: 1; transform: translateY(0); }
+    .faq-item:hover { border-color: rgba(255,107,53,0.3); }
+    .faq-question {
+      width: 100%; padding: 1.2rem 1.5rem; background: none; border: none;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.95rem;
+      font-weight: 600; text-align: left; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: color 0.2s;
+    }
+    .faq-question:hover { color: var(--accent); }
+    .faq-question .icon {
+      font-size: 1.2rem; transition: transform 0.35s; flex-shrink: 0; color: var(--accent);
+    }
+    .faq-item.open .faq-question .icon { transform: rotate(45deg); }
+    .faq-answer {
+      max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), padding 0.3s;
+      padding: 0 1.5rem;
+    }
+    .faq-item.open .faq-answer { max-height: 200px; padding: 0 1.5rem 1.2rem; }
+    .faq-answer p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 100px 6%; text-align: center;
+      background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(255,107,53,0.08) 0%, transparent 70%);
+    }
+    .cta-section h2 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.8px; margin-bottom: 1.2rem; }
+    .cta-section p { color: var(--muted); font-size: 1.05rem; margin-bottom: 2.5rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 60px 6% 30px;
+    }
+    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; margin-bottom: 3rem; }
+    .footer-brand .logo { font-size: 1.4rem; font-weight: 800; color: var(--accent); margin-bottom: 0.8rem; }
+    .footer-brand p { font-size: 0.87rem; color: var(--muted); line-height: 1.7; max-width: 220px; }
+    .footer-col h4 { font-size: 0.85rem; font-weight: 700; color: var(--text); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1rem; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.6rem; }
+    .footer-col ul li a { font-size: 0.87rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-col ul li a:hover { color: var(--accent); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .footer-bottom p { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── BACK TO TOP ── */
+    .back-to-top {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 900;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #e55a25);
+      color: #fff; border: none; cursor: pointer;
+      font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 25px rgba(255,107,53,0.3);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .back-to-top.show { transform: translateY(0); opacity: 1; }
+    .back-to-top:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 12px 35px rgba(255,107,53,0.45); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 0.8rem; }
+      .stat-card { padding: 0.8rem 1.2rem; }
+      .section { padding: 60px 5%; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      nav { padding: 0 4%; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PAGE TRANSITION -->
+<div class="page-transition"></div>
+
+<!-- NAVBAR -->
+<nav id="mainNav">
+  <a href="home.html" class="nav-logo">Dhobi<span>Waala</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html">Home</a></li>
+    <li><a href="../ServicesPage/services.html">Services</a></li>
+    <li><a href="../OrdersPage/orders.html">Orders</a></li>
+    <li><a href="../signuppage/signup.html">Sign Up</a></li>
+    <li><a href="../LoginPage/login.html" class="btn-nav">Login</a></li>
+  </ul>
+  <div class="nav-controls">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <div class="toggle-knob" id="toggleKnob">🌙</div>
+    </button>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="home.html">🏠 Home</a>
+  <a href="../ServicesPage/services.html">🧺 Services</a>
+  <a href="../OrdersPage/orders.html">📋 Orders</a>
+  <a href="../signuppage/signup.html">✍️ Sign Up</a>
+  <a href="../LoginPage/login.html" class="btn-nav">🔐 Login</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-particles" id="heroParticles"></div>
+  <div class="hero-badge">✨ Trusted by 500+ Students</div>
+  <h1>Laundry, <span class="gradient-text">Done Right</span><br/>— Every Time.</h1>
+  <p>Fresh clothes, zero hassle. DhobiWaala picks up, washes, and delivers your laundry right to your doorstep.</p>
+  <div class="hero-btns">
+    <a href="../signuppage/signup.html" class="btn-primary" data-link>Get Started Free →</a>
+    <a href="../ServicesPage/services.html" class="btn-outline" data-link>View Services</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card"><div class="num" data-count="500">0</div><div class="label">Happy Students</div></div>
+    <div class="stat-card"><div class="num" data-count="6">0</div><div class="label">Service Types</div></div>
+    <div class="stat-card"><div class="num" data-count="24">0</div><div class="label">Hr Turnaround</div></div>
+    <div class="stat-card"><div class="num" data-count="50">0</div><div class="label">₹ Starting/kg</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-label">Why Choose Us</div>
+    <h2 class="section-title">Everything you need<br/>for clean clothes</h2>
+    <p class="section-sub">We handle everything from pickup to delivery so you can focus on what matters most.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Quick Pickup</h3>
+      <p>Schedule a pickup in under a minute. We come to your doorstep on time, every time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <h3>Student-Friendly Prices</h3>
+      <p>Affordable rates starting at just ₹50/kg. No hidden charges, transparent billing always.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>Quality Guaranteed</h3>
+      <p>Professional cleaning with premium detergents. Your clothes come back fresh and cared for.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌿</div>
+      <h3>Eco-Friendly</h3>
+      <p>We use environment-safe detergents and water-efficient machines. Clean clothes, clean planet.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>Live Tracking</h3>
+      <p>Know the status of your laundry at all times from your personal orders dashboard.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚚</div>
+      <h3>Fast Delivery</h3>
+      <p>Get your fresh laundry delivered within 24 hours. Express service available too!</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-section">
+  <div class="section-header">
+    <div class="section-label">Process</div>
+    <h2 class="section-title">Done in 4 easy steps</h2>
+    <p class="section-sub">From booking to delivery, we make laundry the easiest part of your day.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step"><div class="step-num">📱</div><h3>Book Online</h3><p>Choose your service and place your order from our website in seconds.</p></div>
+    <div class="step"><div class="step-num">🎒</div><h3>We Pickup</h3><p>Our team picks up your clothes from your location at the scheduled time.</p></div>
+    <div class="step"><div class="step-num">🧺</div><h3>We Wash</h3><p>Your clothes are washed, dried, and folded with professional care.</p></div>
+    <div class="step"><div class="step-num">🚚</div><h3>We Deliver</h3><p>Fresh, clean clothes delivered back to you — within 24 hours.</p></div>
+  </div>
+</section>
+
+<!-- SERVICES PREVIEW -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-label">Services</div>
+    <h2 class="section-title">Pick your service</h2>
+    <p class="section-sub">From everyday washing to premium dry cleaning, we've got you covered.</p>
+  </div>
+  <div class="services-grid">
+    <div class="svc-card"><div class="svc-icon">👕</div><h3>Wash & Fold</h3><p>Everyday clothes cleaned and neatly folded.</p><div class="svc-price">₹50 / kg</div></div>
+    <div class="svc-card"><div class="svc-icon">✨</div><h3>Dry Cleaning</h3><p>Delicate fabrics handled with expert care.</p><div class="svc-price">₹80 / kg</div></div>
+    <div class="svc-card"><div class="svc-icon">👔</div><h3>Ironing</h3><p>Crisp, wrinkle-free clothes every time.</p><div class="svc-price">₹50 / kg</div></div>
+    <div class="svc-card"><div class="svc-icon">🔬</div><h3>Stain Removal</h3><p>Stubborn stains treated with specialist products.</p><div class="svc-price">₹50 / kg</div></div>
+    <div class="svc-card"><div class="svc-icon">⚡</div><h3>Express Delivery</h3><p>Same-day or next-morning service available.</p><div class="svc-price">₹50 / kg</div></div>
+    <div class="svc-card"><div class="svc-icon">📦</div><h3>Subscription Plans</h3><p>Weekly or monthly plans for regular users.</p><div class="svc-price">₹50 / kg</div></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section how-section">
+  <div class="section-header">
+    <div class="section-label">Testimonials</div>
+    <h2 class="section-title">What students say</h2>
+    <p class="section-sub">Don't just take our word for it — hear from our happy customers.</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <div class="quote-icon">❝</div>
+      <p class="text">DhobiWaala saved me so much time! My clothes come back perfectly folded every single time. Best service on campus!</p>
+      <div class="author">
+        <div class="avatar">R</div>
+        <div class="author-info"><div class="name">Rahul Sharma</div><div class="role">B.Tech, 3rd Year</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <div class="quote-icon">❝</div>
+      <p class="text">The subscription plan is a game-changer. I never worry about laundry anymore. Super affordable too!</p>
+      <div class="author">
+        <div class="avatar">P</div>
+        <div class="author-info"><div class="name">Priya Patel</div><div class="role">MBA, 1st Year</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★☆</div>
+      <div class="quote-icon">❝</div>
+      <p class="text">Express delivery is incredible — dropped off my clothes in the morning and got them back the same evening. Highly recommend!</p>
+      <div class="author">
+        <div class="avatar">A</div>
+        <div class="author-info"><div class="name">Arjun Mehta</div><div class="role">B.Sc, 2nd Year</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title">Frequently asked questions</h2>
+    <p class="section-sub">Got questions? We've got answers.</p>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-question">How do I schedule a pickup? <span class="icon">+</span></button>
+      <div class="faq-answer"><p>Simply sign up, choose your service, set the quantity and place your order. Our team will schedule the pickup automatically based on your hostel location.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">What is the turnaround time? <span class="icon">+</span></button>
+      <div class="faq-answer"><p>Standard service takes 24 hours. Express service can deliver within the same day if you submit before noon.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">Is my clothing safe? <span class="icon">+</span></button>
+      <div class="faq-answer"><p>Absolutely! We use professional-grade, fabric-safe detergents. Each order is handled individually and tracked with a unique ID.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">Can I cancel my order? <span class="icon">+</span></button>
+      <div class="faq-answer"><p>Yes, you can cancel any pending order from your Orders dashboard. Once the order is in progress, cancellation is not available.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">Do you offer monthly plans? <span class="icon">+</span></button>
+      <div class="faq-answer"><p>Yes! Our Subscription Plans service offers weekly and monthly packages at discounted rates, perfect for hostel students.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready for <span style="color:var(--accent)">fresher clothes</span>?</h2>
+  <p>Join hundreds of students who trust DhobiWaala every week.</p>
+  <a href="../signuppage/signup.html" class="btn-primary" style="font-size:1.05rem; padding:1rem 2.5rem;" data-link>Create Free Account →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">DhobiWaala</div>
+      <p>Smart laundry services designed for busy students. Clean clothes, zero stress.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="../ServicesPage/services.html">Services</a></li>
+        <li><a href="../OrdersPage/orders.html">My Orders</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <ul>
+        <li><a href="../signuppage/signup.html">Sign Up</a></li>
+        <li><a href="../LoginPage/login.html">Login</a></li>
+        <li><a href="../AdminLoginPage/adminLogin.html">Admin</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">support@dhobiwaala.in</a></li>
+        <li><a href="#">+91 98765 43210</a></li>
+        <li><a href="#">Mon–Sat, 8am–8pm</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 DhobiWaala. All rights reserved.</p>
+    <p>Made with ❤️ for students</p>
+  </div>
+</footer>
+
+<!-- BACK TO TOP -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<script>
+  // ── THEME TOGGLE ──
+  const themeToggle = document.getElementById('themeToggle');
+  const toggleKnob = document.getElementById('toggleKnob');
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('dhobiwaala-theme', theme);
+    toggleKnob.textContent = theme === 'dark' ? '🌙' : '☀️';
+  }
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+  // Init
+  applyTheme(localStorage.getItem('dhobiwaala-theme') || 'dark');
+
+  // ── HAMBURGER MENU ──
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function toggleMenu() {
+    hamburger.classList.toggle('active');
+    mobileMenu.classList.toggle('show');
+    mobileOverlay.classList.toggle('show');
+    document.body.style.overflow = mobileMenu.classList.contains('show') ? 'hidden' : '';
+  }
+  hamburger.addEventListener('click', toggleMenu);
+  mobileOverlay.addEventListener('click', toggleMenu);
+
+  // ── NAV SCROLL EFFECT ──
+  const mainNav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    mainNav.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // ── BACK TO TOP ──
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backToTop.classList.toggle('show', window.scrollY > 400);
+  });
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ── SCROLL REVEAL ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.feature-card, .step, .svc-card, .testimonial-card, .faq-item').forEach(el => observer.observe(el));
+
+  // ── COUNTER ANIMATION ──
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.count);
+        const duration = 1500;
+        const start = performance.now();
+        function update(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(target * eased) + (target === 500 ? '+' : target === 24 ? 'h' : '');
+          if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  // ── FAQ ACCORDION ──
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // ── HERO PARTICLES ──
+  const particlesContainer = document.getElementById('heroParticles');
+  for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    const size = Math.random() * 8 + 4;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = Math.random() > 0.5 ? 'var(--accent)' : 'var(--gold)';
+    p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    particlesContainer.appendChild(p);
+  }
+
+  // ── SMOOTH PAGE TRANSITIONS ──
+  document.querySelectorAll('a[data-link]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      document.body.classList.add('page-exit');
+      setTimeout(() => { window.location.href = href; }, 400);
+    });
+  });
+</script>
+</body>
+</html>
