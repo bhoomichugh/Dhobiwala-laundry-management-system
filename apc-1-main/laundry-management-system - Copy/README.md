@@ -48,7 +48,7 @@ https://<your-render-service>.onrender.com/frontend/HomePage/home.html
 
 ## Railway Deploy
 
-This repo includes a root `railway.toml`, so Railway can build the nested backend project automatically.
+This repo includes a root `railway.toml` and `Dockerfile`, so Railway can build the nested backend project with Java 17 automatically.
 
 1. Push the repo to GitHub.
 2. Railway -> New Project -> Deploy from GitHub Repo.
