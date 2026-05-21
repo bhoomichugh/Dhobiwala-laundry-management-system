@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: dhobiwala-laundry-management-system
+    env: java
+    plan: free
+    rootDir: apc-1-main/laundry-management-system - Copy/backend
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/laundry-management-system-1.0.0.jar
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: JAVA_VERSION
+        value: 17
