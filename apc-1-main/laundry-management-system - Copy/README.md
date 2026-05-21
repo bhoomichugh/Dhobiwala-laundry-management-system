@@ -26,6 +26,14 @@ PORT=8080
 
 Most platforms set `PORT` automatically.
 
+Spring Boot also supports these variable names, which are recommended on Railway:
+
+```text
+SPRING_DATASOURCE_URL=jdbc:mysql://<host>:<port>/<database>
+SPRING_DATASOURCE_USERNAME=<mysql-user>
+SPRING_DATASOURCE_PASSWORD=<mysql-password>
+```
+
 ## Render Deploy
 
 This repo includes a root `render.yaml` blueprint. On Render:
@@ -35,9 +43,9 @@ This repo includes a root `render.yaml` blueprint. On Render:
 3. Add these environment variables:
 
 ```text
-DATABASE_URL=jdbc:mysql://<host>:<port>/<database>
-DATABASE_USERNAME=<mysql-user>
-DATABASE_PASSWORD=<mysql-password>
+SPRING_DATASOURCE_URL=jdbc:mysql://${{MySQL.MYSQL_HOST}}:${{MySQL.MYSQL_PORT}}/${{MySQL.MYSQL_DATABASE}}
+SPRING_DATASOURCE_USERNAME=${{MySQL.MYSQL_USER}}
+SPRING_DATASOURCE_PASSWORD=${{MySQL.MYSQL_PASSWORD}}
 ```
 
 Start URL after deploy:
