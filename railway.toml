@@ -1,0 +1,8 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd \"apc-1-main/laundry-management-system - Copy/backend\" && ./mvnw clean package -DskipTests"
+
+[deploy]
+startCommand = "cd \"apc-1-main/laundry-management-system - Copy/backend\" && java -jar target/laundry-management-system-1.0.0.jar"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
